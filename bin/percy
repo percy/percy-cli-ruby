@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+require 'commander'
 require 'percy/cli'
 
-puts 'test'
+Percy::Cli.new.run if $0 == __FILE__
