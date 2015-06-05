@@ -169,7 +169,7 @@ module Percy
             next
           end
           if response.status != 200
-            say_error "Remote resource returned non-200, skipping: #{url}"
+            say_error "Remote resource failed, skipping: #{url}"
             next
           end
 
