@@ -20,8 +20,10 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'commander', '~> 4'
   spec.add_dependency 'percy-client', '~> 0.2'
+  spec.add_dependency 'faraday', '>= 0.8'
 
   spec.add_development_dependency 'bundler', '~> 1.7'
   spec.add_development_dependency 'rake', '~> 10.0'
   spec.add_development_dependency 'rspec', '~> 3'
+  spec.add_development_dependency 'webmock', '~> 1'
 end

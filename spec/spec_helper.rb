@@ -1,4 +1,5 @@
 require 'percy/cli'
+require 'webmock/rspec'
 
 RSpec.configure do |config|
   config.expect_with :rspec do |expectations|
@@ -23,4 +24,11 @@ RSpec.configure do |config|
   # test failures related to randomization by passing the same `--seed` value
   # as the one that triggered the failure.
   Kernel.srand config.seed
+
+  config.before(:each) do
+    WebMock.disable_net_connect!(allow: [
+      'maxcdn.bootstrapcdn.com',
+      'ajax.googleapis.com',
+    ])
+  end
 end
