@@ -42,6 +42,10 @@ module Percy
           String,
           'Regular expression for matching the files to snapshot. Defaults to: "\.(html|htm)$"'
         c.option \
+          '--snapshot_limit NUM',
+          Integer,
+          "Max number of snapshots to upload, useful for testing. Default is unlimited."
+        c.option \
           '--autoload_remote_resources',
           'Attempts to parse HTML and CSS for remote resources, fetch them, and include in ' +
           'snapshots. This can be very useful if your static website relies on remote resources.'

@@ -3,6 +3,8 @@ require 'digest'
 require 'uri'
 require 'thread/pool'
 
+Thread::Pool.abort_on_exception = true
+
 module Percy
   class Cli
     module Snapshot
@@ -47,7 +49,7 @@ module Percy
       )
       HTML_REMOTE_URL_REGEX = Regexp.new("(<link.*?href=['\"](" + REMOTE_URL_REGEX_STRING + ")[^>]+)")
 
-      # Match all url("https://...") calls, with whitespace and quote variatinos.
+      # Match all url("https://...") styles, with whitespace and quote variatinos.
       CSS_REMOTE_URL_REGEX = Regexp.new(
         "url\\s*\\([\"'\s]*(" + REMOTE_URL_REGEX_STRING + ")[\"'\s]*\\)"
       )
@@ -57,6 +59,7 @@ module Percy
         strip_prefix = File.absolute_path(options[:strip_prefix] || root_dir)
         autoload_remote_resources = options[:autoload_remote_resources] || false
         num_threads = options[:threads] || 10
+        snapshot_limit = options[:snapshot_limit]
 
         # Find all the static files in the given root directory.
         root_paths = find_root_paths(root_dir, snapshots_regex: options[:snapshots_regex])
@@ -69,37 +72,40 @@ module Percy
           related_resources += build_remote_resources(remote_urls)
         end
 
+        all_resources = root_resources + related_resources
 
         if root_resources.empty?
           say "No root resource files found. Are there HTML files in the given directory?"
           exit(-1)
         end
 
-        # Create a Percy build for the snapshots.
-        build = Percy.create_build(repo)
+        say 'Creating build...'
+        build = Percy.create_build(repo, resources: related_resources)
 
-        # Upload the first snapshot synchronously since many resources are likely shared.
-        root_resource = root_resources[0]
-        say "Uploading snapshot (1/#{root_resources.length}): #{root_resource.resource_url}"
-        upload_snapshot(build, root_resource, related_resources, {num_threads: num_threads})
+        say 'Uploading build resources...'
+        upload_missing_resources(build, build, all_resources, {num_threads: num_threads})
 
         # Upload a snapshot for every root resource, and associate the related_resources.
         output_lock = Mutex.new
         snapshot_thread_pool = Thread.pool(num_threads)
-        root_resources[1..-1].each_with_index do |root_resource, i|
+        total = root_resources.length
+        root_resources.each_with_index do |root_resource, i|
+          break if snapshot_limit && i + 1 > snapshot_limit
           snapshot_thread_pool.process do
             output_lock.synchronize do
-              say "Uploading snapshot (#{i+2}/#{root_resources.length}): #{root_resource.resource_url}"
+              say "Uploading snapshot (#{i+1}/#{total}): #{root_resource.resource_url}"
             end
-            upload_snapshot(build, root_resource, related_resources, {num_threads: num_threads})
+            snapshot = Percy.create_snapshot(build['data']['id'], [root_resource])
+            upload_missing_resources(build, snapshot, all_resources, {num_threads: num_threads})
           end
         end
-
         snapshot_thread_pool.wait
         snapshot_thread_pool.shutdown
 
         # Finalize the build.
+        say 'Finalizing build...'
         Percy.finalize_build(build['data']['id'])
+        say 'Done!'
       end
 
       private
@@ -181,7 +187,7 @@ module Percy
           remote_urls.length,
           title: 'Fetching remote resources...',
           format: ':title |:progress_bar| :percent_complete% complete - :url',
-          width: 40,
+          width: 20,
           complete_message: nil,
         )
 
@@ -204,20 +210,15 @@ module Percy
         resources
       end
 
-      def upload_snapshot(build, root_resource, related_resources, options = {})
-        all_resources = [root_resource] + related_resources
-
-        # Create the snapshot for this page. For simplicity, include all non-HTML resources in the
-        # snapshot as related resources. May seem inefficient, but they will only be uploaded once.
-        snapshot = Percy.create_snapshot(build['data']['id'], all_resources)
-
+      # Uploads missing resources either for a build or snapshot.
+      def upload_missing_resources(build, obj, potential_resources, options = {})
         # Upload the content for any missing resources.
-        missing_resources = snapshot['data']['relationships']['missing-resources']['data']
+        missing_resources = obj['data']['relationships']['missing-resources']['data']
         bar = Commander::UI::ProgressBar.new(
           missing_resources.length,
           title: 'Uploading resources...',
           format: ':title |:progress_bar| :percent_complete% complete - :resource_url',
-          width: 40,
+          width: 20,
           complete_message: nil,
         )
         output_lock = Mutex.new
@@ -225,7 +226,7 @@ module Percy
         missing_resources.each do |missing_resource|
           uploader_thread_pool.process do
             missing_resource_sha = missing_resource['id']
-            resource = all_resources.find { |r| r.sha == missing_resource_sha }
+            resource = potential_resources.find { |r| r.sha == missing_resource_sha }
             path = resource.resource_url
             output_lock.synchronize do
               bar.increment resource_url: resource.resource_url
