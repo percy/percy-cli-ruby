@@ -3,4 +3,4 @@
 require 'commander'
 require 'percy/cli'
 
-Percy::Cli.new.run if $0 == __FILE__
+Percy::Cli.new.run

@@ -8,6 +8,9 @@ module Percy
     include Commander::Methods
     include Percy::Cli::Snapshot
 
+    DEFAULT_NUM_THREADS = 10
+    MAX_NUM_THREADS = 50
+
     def say(*args)
       $terminal.say(*args)
     end
@@ -42,9 +45,17 @@ module Percy
           '--autoload_remote_resources',
           'Attempts to parse HTML and CSS for remote resources, fetch them, and include in ' +
           'snapshots. This can be very useful if your static website relies on remote resources.'
+        c.option \
+          '--threads NUM',
+          Integer,
+          "Number of threads in pools for snapshot and resource uploads. " +
+          "Defaults to #{DEFAULT_NUM_THREADS}, max #{MAX_NUM_THREADS}."
 
         c.action do |args, options|
           options.default autoload_remote_resources: false
+          options.default threads: DEFAULT_NUM_THREADS
+          options.threads = MAX_NUM_THREADS if options.threads > MAX_NUM_THREADS
+
           raise OptionParser::MissingArgument, 'root folder path is required' if args.empty?
           if args.length > 1
             raise OptionParser::MissingArgument, 'only a single root folder path can be given'
