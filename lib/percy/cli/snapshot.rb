@@ -88,7 +88,7 @@ module Percy
         # Upload a snapshot for every root resource, and associate the related_resources.
         output_lock = Mutex.new
         snapshot_thread_pool = Thread.pool(num_threads)
-        total = root_resources.length
+        total = snapshot_limit ? [root_resources.length, snapshot_limit].min : root_resources.length
         root_resources.each_with_index do |root_resource, i|
           break if snapshot_limit && i + 1 > snapshot_limit
           snapshot_thread_pool.process do
@@ -97,6 +97,7 @@ module Percy
             end
             snapshot = Percy.create_snapshot(build['data']['id'], [root_resource])
             upload_missing_resources(build, snapshot, all_resources, {num_threads: num_threads})
+            Percy.finalize_snapshot(snapshot['data']['id'])
           end
         end
         snapshot_thread_pool.wait
@@ -105,7 +106,8 @@ module Percy
         # Finalize the build.
         say 'Finalizing build...'
         Percy.finalize_build(build['data']['id'])
-        say 'Done!'
+        say "Done! Percy is now processing, you can view the visual diffs here:"
+        say build['data']['attributes']['web-url']
       end
 
       private
@@ -188,7 +190,7 @@ module Percy
           title: 'Fetching remote resources...',
           format: ':title |:progress_bar| :percent_complete% complete - :url',
           width: 20,
-          complete_message: nil,
+          complete_message: "Fetched #{remote_urls.length} remote resources.",
         )
 
         remote_urls.each do |url|
