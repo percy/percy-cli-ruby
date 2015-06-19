@@ -18,8 +18,8 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'commander', '~> 4'
-  spec.add_dependency 'percy-client', '>= 0.2.5'
+  spec.add_dependency 'commander', '~> 4.3'
+  spec.add_dependency 'percy-client', '>= 0.2.6'
   spec.add_dependency 'faraday', '>= 0.8'
   spec.add_dependency 'thread', '~> 0.2'
 
