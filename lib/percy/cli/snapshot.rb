@@ -197,7 +197,7 @@ module Percy
           bar.increment url: url
           begin
             response = Faraday.get(url)
-          rescue Faraday::Error::ConnectionFailed => e
+          rescue Faraday::Error::ConnectionFailed, Faraday::SSLError => e
             say_error e
             next
           end
