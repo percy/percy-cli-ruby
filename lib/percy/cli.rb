@@ -46,17 +46,12 @@ module Percy
           Integer,
           "Max number of snapshots to upload, useful for testing. Default is unlimited."
         c.option \
-          '--autoload_remote_resources',
-          'Attempts to parse HTML and CSS for remote resources, fetch them, and include in ' +
-          'snapshots. This can be very useful if your static website relies on remote resources.'
-        c.option \
           '--threads NUM',
           Integer,
           "Number of threads in pools for snapshot and resource uploads. " +
           "Defaults to #{DEFAULT_NUM_THREADS}, max #{MAX_NUM_THREADS}."
 
         c.action do |args, options|
-          options.default autoload_remote_resources: false
           options.default threads: DEFAULT_NUM_THREADS
           options.threads = MAX_NUM_THREADS if options.threads > MAX_NUM_THREADS
 

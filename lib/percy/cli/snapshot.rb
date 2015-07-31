@@ -16,48 +16,9 @@ module Percy
 
       DEFAULT_SNAPSHOTS_REGEX = /\.(html|htm)$/
 
-      # Modified version of Diego Perini's URL regex. https://gist.github.com/dperini/729294
-      REMOTE_URL_REGEX_STRING = (
-        # protocol identifier
-        "(?:(?:https?:)?//)" +
-        "(?:" +
-          # IP address exclusion
-          # private & local networks
-          "(?!(?:10|127)(?:\\.\\d{1,3}){3})" +
-          "(?!(?:169\\.254|192\\.168)(?:\\.\\d{1,3}){2})" +
-          "(?!172\\.(?:1[6-9]|2\\d|3[0-1])(?:\\.\\d{1,3}){2})" +
-          # IP address dotted notation octets
-          # excludes loopback network 0.0.0.0
-          # excludes reserved space >= 224.0.0.0
-          # excludes network & broacast addresses
-          # (first & last IP address of each class)
-          "(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])" +
-          "(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}" +
-          "(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))" +
-        "|" +
-          # host name
-          "(?:(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)" +
-          # domain name
-          "(?:\\.(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)*" +
-          # TLD identifier
-          "(?:\\.(?:[a-z\\u00a1-\\uffff]{2,}))" +
-        ")" +
-        # port number
-        "(?::\\d{2,5})?" +
-        # resource path
-        "(?:/[^\\s\"']*)?"
-      )
-      HTML_REMOTE_URL_REGEX = Regexp.new("(<link.*?href=['\"](" + REMOTE_URL_REGEX_STRING + ")[^>]+)")
-
-      # Match all url("https://...") styles, with whitespace and quote variatinos.
-      CSS_REMOTE_URL_REGEX = Regexp.new(
-        "url\\s*\\([\"'\s]*(" + REMOTE_URL_REGEX_STRING + ")[\"'\s]*\\)"
-      )
-
       def run_snapshot(root_dir, options = {})
         repo = options[:repo] || Percy.config.repo
         strip_prefix = File.absolute_path(options[:strip_prefix] || root_dir)
-        autoload_remote_resources = options[:autoload_remote_resources] || false
         num_threads = options[:threads] || 10
         snapshot_limit = options[:snapshot_limit]
 
@@ -66,12 +27,6 @@ module Percy
         resource_paths = find_resource_paths(root_dir)
         root_resources = build_resources(root_paths, strip_prefix, is_root: true)
         related_resources = build_resources(resource_paths, strip_prefix)
-
-        if autoload_remote_resources
-          remote_urls = find_remote_urls(root_paths + resource_paths)
-          related_resources += build_remote_resources(remote_urls)
-        end
-
         all_resources = root_resources + related_resources
 
         if root_resources.empty?
@@ -144,25 +99,6 @@ module Percy
         file_paths
       end
 
-      def find_remote_urls(file_paths)
-        urls = []
-        file_paths.each do |path|
-          extension = File.extname(path)
-          case extension
-          when '.html'
-            content = File.read(path)
-            urls += content.scan(HTML_REMOTE_URL_REGEX).map do |match|
-              next if !match[0].include?('stylesheet')  # Only include links with rel="stylesheet".
-              maybe_add_protocol(match[1])
-            end
-          when '.css'
-            content = File.read(path)
-            urls += content.scan(CSS_REMOTE_URL_REGEX).map { |match| maybe_add_protocol(match[0]) }
-          end
-        end
-        urls.compact.uniq
-      end
-
       def maybe_add_protocol(url)
         url[0..1] == '//' ? "http:#{url}" : url
       end
@@ -178,36 +114,6 @@ module Percy
           resource_url = URI.escape(path.sub(strip_prefix, ''))
           resources << Percy::Client::Resource.new(
             resource_url, sha: sha, is_root: options[:is_root], path: path)
-        end
-        resources
-      end
-
-      def build_remote_resources(remote_urls)
-        resources = []
-
-        bar = Commander::UI::ProgressBar.new(
-          remote_urls.length,
-          title: 'Fetching remote resources...',
-          format: ':title |:progress_bar| :percent_complete% complete - :url',
-          width: 20,
-          complete_message: "Fetched #{remote_urls.length} remote resources.",
-        )
-
-        remote_urls.each do |url|
-          bar.increment url: url
-          begin
-            response = Faraday.get(url)
-          rescue Faraday::Error::ConnectionFailed => e
-            say_error e
-            next
-          end
-          if response.status != 200
-            say_error "Remote resource failed, skipping (#{response.status}): #{url}"
-            next
-          end
-
-          sha = Digest::SHA256.hexdigest(response.body)
-          resources << Percy::Client::Resource.new(url, sha: sha, content: response.body)
         end
         resources
       end
