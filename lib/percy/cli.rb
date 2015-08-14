@@ -30,6 +30,12 @@ module Percy
         c.syntax = 'snapshot <root_dir>'
         c.description = 'Snapshot a folder of static files.'
         c.option \
+          '--baseurl PATH',
+          String,
+          'The live URL base path. Defaults to "/". Set this if your site is hosted in ' +
+          'a subdirectory in production that does not exist locally. If using Jekyll, this ' +
+          'should be the same as your "baseurl" config.'
+        c.option \
           '--strip_prefix PATH',
           String,
           'Directory path to strip from generated URLs. Defaults to the given root directory.'

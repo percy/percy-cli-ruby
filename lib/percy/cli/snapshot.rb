@@ -21,12 +21,16 @@ module Percy
         strip_prefix = File.absolute_path(options[:strip_prefix] || root_dir)
         num_threads = options[:threads] || 10
         snapshot_limit = options[:snapshot_limit]
+        baseurl = options[:baseurl] || '/'
+        raise ArgumentError.new('baseurl must start with /') if baseurl[0] != '/'
+
+        base_resource_options = {strip_prefix: strip_prefix, baseurl: baseurl}
 
         # Find all the static files in the given root directory.
         root_paths = find_root_paths(root_dir, snapshots_regex: options[:snapshots_regex])
         resource_paths = find_resource_paths(root_dir)
-        root_resources = build_resources(root_paths, strip_prefix, is_root: true)
-        related_resources = build_resources(resource_paths, strip_prefix)
+        root_resources = build_resources(root_paths, base_resource_options.merge(is_root: true))
+        related_resources = build_resources(resource_paths, base_resource_options)
         all_resources = root_resources + related_resources
 
         if root_resources.empty?
@@ -103,7 +107,9 @@ module Percy
         url[0..1] == '//' ? "http:#{url}" : url
       end
 
-      def build_resources(paths, strip_prefix, options = {})
+      def build_resources(paths, options = {})
+        strip_prefix = options[:strip_prefix]
+        baseurl = options[:baseurl]
         resources = []
 
         # Strip trailing slash from strip_prefix.
@@ -111,7 +117,8 @@ module Percy
 
         paths.each do |path|
           sha = Digest::SHA256.hexdigest(File.read(path))
-          resource_url = URI.escape(path.sub(strip_prefix, ''))
+          resource_url = URI.escape(File.join(baseurl, path.sub(strip_prefix, '')))
+
           resources << Percy::Client::Resource.new(
             resource_url, sha: sha, is_root: options[:is_root], path: path)
         end
