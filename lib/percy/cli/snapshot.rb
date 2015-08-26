@@ -3,6 +3,7 @@ require 'digest'
 require 'uri'
 require 'thread/pool'
 
+Thread.abort_on_exception = true
 Thread::Pool.abort_on_exception = true
 
 module Percy
