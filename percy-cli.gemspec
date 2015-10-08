@@ -19,7 +19,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_dependency 'commander', '~> 4.3'
-  spec.add_dependency 'percy-client', '>= 0.4.1'
+  spec.add_dependency 'percy-client', '>= 0.10.0'
   spec.add_dependency 'thread', '~> 0.2'
 
   spec.add_development_dependency 'bundler', '~> 1.7'

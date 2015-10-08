@@ -8,8 +8,8 @@ module Percy
     include Commander::Methods
     include Percy::Cli::Snapshot
 
-    DEFAULT_NUM_THREADS = 10
-    MAX_NUM_THREADS = 50
+    DEFAULT_NUM_THREADS = 3
+    MAX_NUM_THREADS = 10
 
     def say(*args)
       $terminal.say(*args)
