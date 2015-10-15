@@ -39,11 +39,16 @@ module Percy
           exit(-1)
         end
 
-        say 'Creating build...'
-        build = Percy.create_build(repo, resources: related_resources)
+        build = rescue_connection_failures do
+          say 'Creating build...'
+          build = Percy.create_build(repo, resources: related_resources)
 
-        say 'Uploading build resources...'
-        upload_missing_resources(build, build, all_resources, {num_threads: num_threads})
+          say 'Uploading build resources...'
+          upload_missing_resources(build, build, all_resources, {num_threads: num_threads})
+
+          build
+        end
+        return if failed?
 
         # Upload a snapshot for every root resource, and associate the related_resources.
         output_lock = Mutex.new
@@ -55,9 +60,11 @@ module Percy
             output_lock.synchronize do
               say "Uploading snapshot (#{i+1}/#{total}): #{root_resource.resource_url}"
             end
-            snapshot = Percy.create_snapshot(build['data']['id'], [root_resource])
-            upload_missing_resources(build, snapshot, all_resources, {num_threads: num_threads})
-            Percy.finalize_snapshot(snapshot['data']['id'])
+            rescue_connection_failures do
+              snapshot = Percy.create_snapshot(build['data']['id'], [root_resource])
+              upload_missing_resources(build, snapshot, all_resources, {num_threads: num_threads})
+              Percy.finalize_snapshot(snapshot['data']['id'])
+            end
           end
         end
         snapshot_thread_pool.wait
@@ -65,12 +72,30 @@ module Percy
 
         # Finalize the build.
         say 'Finalizing build...'
-        Percy.finalize_build(build['data']['id'])
+        rescue_connection_failures { Percy.finalize_build(build['data']['id']) }
+        return if failed?
         say "Done! Percy is now processing, you can view the visual diffs here:"
         say build['data']['attributes']['web-url']
       end
 
       private
+
+      def failed?
+        !!@failed
+      end
+
+      def rescue_connection_failures(&block)
+        raise ArgumentError.new('block is requried') if !block_given?
+        begin
+          block.call
+        rescue Percy::Client::HttpError,
+            Percy::Client::ConnectionFailed,
+            Percy::Client::TimeoutError => e
+          Percy.logger.error(e)
+          @failed = true
+          nil
+        end
+      end
 
       def find_root_paths(dir_path, options = {})
         snapshots_regex = options[:snapshots_regex] || DEFAULT_SNAPSHOTS_REGEX

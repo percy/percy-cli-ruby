@@ -5,7 +5,41 @@ RSpec.describe Percy::Cli::Snapshot do
 
   describe '#run_snapshot' do
     xit 'snapshots a root directory of static files' do
-      # TODO(fotinakis): tests for this.
+      # TODO(fotinakis): tests for the full flow.
+    end
+  end
+  describe '#rescue_connection_failures' do
+    let(:cli) { Percy::Cli.new }
+    it 'returns block result on success' do
+      result = cli.send(:rescue_connection_failures) do
+        true
+      end
+      expect(result).to eq(true)
+      expect(cli.send(:failed?)).to eq(false)
+    end
+    it 'makes block safe from HttpError' do
+      result = cli.send(:rescue_connection_failures) do
+        raise Percy::Client::HttpError.new(500, 'POST', '', '')
+      end
+      expect(result).to eq(nil)
+      expect(cli.send(:failed?)).to eq(true)
+    end
+    it 'makes block safe from ConnectionFailed' do
+      result = cli.send(:rescue_connection_failures) do
+        raise Percy::Client::ConnectionFailed
+      end
+      expect(result).to eq(nil)
+      expect(cli.send(:failed?)).to eq(true)
+    end
+    it 'makes block safe from TimeoutError' do
+      result = cli.send(:rescue_connection_failures) do
+        raise Percy::Client::TimeoutError
+      end
+      expect(result).to eq(nil)
+      expect(cli.send(:failed?)).to eq(true)
+    end
+    it 'requires a block' do
+      expect { cli.send(:rescue_connection_failures) }.to raise_error(ArgumentError)
     end
   end
   describe '#find_root_paths' do
