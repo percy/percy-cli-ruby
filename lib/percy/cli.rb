@@ -52,6 +52,9 @@ module Percy
           Integer,
           "Max number of snapshots to upload, useful for testing. Default is unlimited."
         c.option \
+          '--[no-]enable_javascript',
+          "Whether or not to enable JavaScript when rendering all snapshots. Default false."
+        c.option \
           '--threads NUM',
           Integer,
           "Number of threads in pools for snapshot and resource uploads. " +
@@ -60,6 +63,7 @@ module Percy
         c.action do |args, options|
           options.default threads: DEFAULT_NUM_THREADS
           options.threads = MAX_NUM_THREADS if options.threads > MAX_NUM_THREADS
+          options.enable_javascript = options.enable_javascript
 
           raise OptionParser::MissingArgument, 'root folder path is required' if args.empty?
           if args.length > 1

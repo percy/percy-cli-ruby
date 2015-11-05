@@ -23,6 +23,7 @@ module Percy
         num_threads = options[:threads] || 10
         snapshot_limit = options[:snapshot_limit]
         baseurl = options[:baseurl] || '/'
+        enable_javascript = !!options[:enable_javascript]
         raise ArgumentError.new('baseurl must start with /') if baseurl[0] != '/'
 
         base_resource_options = {strip_prefix: strip_prefix, baseurl: baseurl}
@@ -61,7 +62,11 @@ module Percy
               say "Uploading snapshot (#{i+1}/#{total}): #{root_resource.resource_url}"
             end
             rescue_connection_failures do
-              snapshot = Percy.create_snapshot(build['data']['id'], [root_resource])
+              snapshot = Percy.create_snapshot(
+                build['data']['id'],
+                [root_resource],
+                enable_javascript: enable_javascript,
+              )
               upload_missing_resources(build, snapshot, all_resources, {num_threads: num_threads})
               Percy.finalize_snapshot(snapshot['data']['id'])
             end
