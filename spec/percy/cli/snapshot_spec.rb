@@ -17,9 +17,16 @@ RSpec.describe Percy::Cli::Snapshot do
       expect(result).to eq(true)
       expect(cli.send(:failed?)).to eq(false)
     end
-    it 'makes block safe from HttpError' do
+    it 'makes block safe from quota exceeded errors' do
       result = cli.send(:rescue_connection_failures) do
-        raise Percy::Client::HttpError.new(500, 'POST', '', '')
+        raise Percy::Client::PaymentRequiredError.new(409, 'POST', '', '')
+      end
+      expect(result).to eq(nil)
+      expect(cli.send(:failed?)).to eq(true)
+    end
+    it 'makes block safe from server errors' do
+      result = cli.send(:rescue_connection_failures) do
+        raise Percy::Client::ServerError.new(502, 'POST', '', '')
       end
       expect(result).to eq(nil)
       expect(cli.send(:failed?)).to eq(true)
