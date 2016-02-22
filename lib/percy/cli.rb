@@ -48,6 +48,10 @@ module Percy
           String,
           'Regular expression for matching the files to snapshot. Defaults to: "\.(html|htm)$"'
         c.option \
+          '--widths CSV',
+          String,
+          'Comma-separated list of rendering widths for snapshots. Ex: 320,1280"'
+        c.option \
           '--snapshot_limit NUM',
           Integer,
           "Max number of snapshots to upload, useful for testing. Default is unlimited."
@@ -64,6 +68,7 @@ module Percy
           options.default threads: DEFAULT_NUM_THREADS
           options.threads = MAX_NUM_THREADS if options.threads > MAX_NUM_THREADS
           options.enable_javascript = options.enable_javascript
+          options.widths = (options.widths || '').split(',')
 
           raise OptionParser::MissingArgument, 'root folder path is required' if args.empty?
           if args.length > 1

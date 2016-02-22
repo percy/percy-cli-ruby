@@ -24,6 +24,7 @@ module Percy
         snapshot_limit = options[:snapshot_limit]
         baseurl = options[:baseurl] || '/'
         enable_javascript = !!options[:enable_javascript]
+        widths = options[:widths].map { |w| Integer(w) }
         raise ArgumentError.new('baseurl must start with /') if baseurl[0] != '/'
 
         base_resource_options = {strip_prefix: strip_prefix, baseurl: baseurl}
@@ -66,6 +67,7 @@ module Percy
                 build['data']['id'],
                 [root_resource],
                 enable_javascript: enable_javascript,
+                widths: widths,
               )
               upload_missing_resources(build, snapshot, all_resources, {num_threads: num_threads})
               Percy.finalize_snapshot(snapshot['data']['id'])
