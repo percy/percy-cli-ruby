@@ -41,6 +41,10 @@ module Percy
           exit(-1)
         end
 
+        related_resources.each do |resource|
+          Percy.logger.debug { "Found build resource: #{resource.resource_url}" }
+        end
+
         build = rescue_connection_failures do
           say 'Creating build...'
           build = Percy.create_build(repo, resources: related_resources)
