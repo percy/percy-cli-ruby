@@ -3,6 +3,9 @@ require 'digest'
 RSpec.describe Percy::Cli::Snapshot do
   let(:root_dir) { File.expand_path('../testdata/', __FILE__) }
 
+  # Used for testing that paths are collapsed before use.r
+  let(:root_dir_relative) { root_dir + '/../testdata' }
+
   describe '#run_snapshot' do
     xit 'snapshots a root directory of static files' do
       # TODO(fotinakis): tests for the full flow.
@@ -55,6 +58,11 @@ RSpec.describe Percy::Cli::Snapshot do
       expect(paths).to match_array([
         File.join(root_dir, 'index.html'),
         File.join(root_dir, 'subdir/test.html'),
+        # Make sure file symlinks are followed.
+        File.join(root_dir, 'subdir/test_symlink.html'),
+        # Make sure directory symlinks are followed.
+        File.join(root_dir, 'subdir_symlink/test.html'),
+        File.join(root_dir, 'subdir_symlink/test_symlink.html'),
       ])
     end
   end
@@ -65,14 +73,19 @@ RSpec.describe Percy::Cli::Snapshot do
         File.join(root_dir, 'css/base.css'),
         File.join(root_dir, 'css/test with spaces.css'),
         File.join(root_dir, 'images/jellybeans.png'),
+        # Make sure file symlinks are followed.
+        File.join(root_dir, 'images/jellybeans-symlink.png'),
+        # Make sure directory symlinks are followed.
+        File.join(root_dir, 'images_symlink/jellybeans.png'),
+        File.join(root_dir, 'images_symlink/jellybeans-symlink.png'),
       ])
     end
   end
-  describe '#build_resources' do
+  describe '#list_resources' do
     it 'returns resource objects' do
       paths = [File.join(root_dir, 'css/base.css')]
       options = {baseurl: '/', strip_prefix: root_dir}
-      resources = Percy::Cli.new.send(:build_resources, paths, options)
+      resources = Percy::Cli.new.send(:list_resources, paths, options)
 
       expect(resources.length).to eq(1)
       expect(resources.first.sha).to eq(Digest::SHA256.hexdigest(File.read(paths.first)))
@@ -80,10 +93,18 @@ RSpec.describe Percy::Cli::Snapshot do
       expect(resources.first.content).to be_nil
       expect(resources.first.path).to eq(paths.first)
     end
+    it 'correctly strips the prefix from resource_url' do
+      paths = [File.join(root_dir, 'index.html')]
+      options = {baseurl: '/', strip_prefix: root_dir_relative, is_root: true}
+      resources = Percy::Cli.new.send(:list_resources, paths, options)
+
+      expect(resources.length).to eq(1)
+      expect(resources.first.resource_url).to eq('/index.html')
+    end
     it 'returns resource objects with is_root set if given' do
       paths = [File.join(root_dir, 'index.html')]
       options = {baseurl: '/', strip_prefix: root_dir, is_root: true}
-      resources = Percy::Cli.new.send(:build_resources, paths, options)
+      resources = Percy::Cli.new.send(:list_resources, paths, options)
 
       expect(resources.length).to eq(1)
       expect(resources.first.resource_url).to eq('/index.html')
@@ -95,7 +116,7 @@ RSpec.describe Percy::Cli::Snapshot do
     it 'encodes the resource_url' do
       paths = [File.join(root_dir, 'css/test with spaces.css')]
       options = {baseurl: '/', strip_prefix: root_dir}
-      resources = Percy::Cli.new.send(:build_resources, paths, options)
+      resources = Percy::Cli.new.send(:list_resources, paths, options)
 
       expect(resources.length).to eq(1)
       expect(resources.first.resource_url).to eq('/css/test%20with%20spaces.css')
@@ -107,7 +128,7 @@ RSpec.describe Percy::Cli::Snapshot do
     it 'prepends the baseurl if given' do
       paths = [File.join(root_dir, 'index.html')]
       options = {strip_prefix: root_dir, is_root: true, baseurl: '/test baseurl/'}
-      resources = Percy::Cli.new.send(:build_resources, paths, options)
+      resources = Percy::Cli.new.send(:list_resources, paths, options)
 
       expect(resources.length).to eq(1)
       expect(resources.first.resource_url).to eq('/test%20baseurl/index.html')

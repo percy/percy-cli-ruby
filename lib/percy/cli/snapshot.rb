@@ -19,7 +19,8 @@ module Percy
 
       def run_snapshot(root_dir, options = {})
         repo = options[:repo] || Percy.config.repo
-        strip_prefix = File.absolute_path(options[:strip_prefix] || root_dir)
+        root_dir = File.expand_path(File.absolute_path(root_dir))
+        strip_prefix = File.expand_path(File.absolute_path(options[:strip_prefix] || root_dir))
         num_threads = options[:threads] || 10
         snapshot_limit = options[:snapshot_limit]
         baseurl = options[:baseurl] || '/'
@@ -32,22 +33,22 @@ module Percy
         # Find all the static files in the given root directory.
         root_paths = find_root_paths(root_dir, snapshots_regex: options[:snapshots_regex])
         resource_paths = find_resource_paths(root_dir)
-        root_resources = build_resources(root_paths, base_resource_options.merge(is_root: true))
-        related_resources = build_resources(resource_paths, base_resource_options)
-        all_resources = root_resources + related_resources
+        root_resources = list_resources(root_paths, base_resource_options.merge(is_root: true))
+        build_resources = list_resources(resource_paths, base_resource_options)
+        all_resources = root_resources + build_resources
 
         if root_resources.empty?
           say "No root resource files found. Are there HTML files in the given directory?"
           exit(-1)
         end
 
-        related_resources.each do |resource|
+        build_resources.each do |resource|
           Percy.logger.debug { "Found build resource: #{resource.resource_url}" }
         end
 
         build = rescue_connection_failures do
           say 'Creating build...'
-          build = Percy.create_build(repo, resources: related_resources)
+          build = Percy.create_build(repo, resources: build_resources)
 
           say 'Uploading build resources...'
           upload_missing_resources(build, build, all_resources, {num_threads: num_threads})
@@ -56,7 +57,7 @@ module Percy
         end
         return if failed?
 
-        # Upload a snapshot for every root resource, and associate the related_resources.
+        # Upload a snapshot for every root resource, and associate the build_resources.
         output_lock = Mutex.new
         snapshot_thread_pool = Thread.pool(num_threads)
         total = snapshot_limit ? [root_resources.length, snapshot_limit].min : root_resources.length
@@ -113,10 +114,7 @@ module Percy
         snapshots_regex = options[:snapshots_regex] || DEFAULT_SNAPSHOTS_REGEX
 
         file_paths = []
-        Find.find(dir_path).each do |relative_path|
-          path = File.absolute_path(relative_path)
-          # Skip directories.
-          next if !FileTest.file?(path)
+        _find_files(dir_path).each do |path|
           # Skip files that don't match the snapshots_regex.
           next if !path.match(snapshots_regex)
           file_paths << path
@@ -126,11 +124,7 @@ module Percy
 
       def find_resource_paths(dir_path)
         file_paths = []
-        Find.find(dir_path).each do |relative_path|
-          path = File.absolute_path(relative_path)
-
-          # Skip directories.
-          next if !FileTest.file?(path)
+        _find_files(dir_path).each do |path|
           # Skip dot files.
           next if path.match(/\/\./)
           # Only include files with the above static extensions.
@@ -145,8 +139,8 @@ module Percy
         url[0..1] == '//' ? "http:#{url}" : url
       end
 
-      def build_resources(paths, options = {})
-        strip_prefix = options[:strip_prefix]
+      def list_resources(paths, options = {})
+        strip_prefix = File.expand_path(options[:strip_prefix])
         baseurl = options[:baseurl]
         resources = []
 
@@ -194,6 +188,18 @@ module Percy
         uploader_thread_pool.wait
         uploader_thread_pool.shutdown
       end
+
+      # A file find method that follows directory and file symlinks.
+      def _find_files(*paths)
+        paths.flatten!
+        paths.map! { |p| Pathname.new(p) }
+        files = paths.select { |p| p.file? }
+        (paths - files).each do |dir|
+          files << _find_files(dir.children)
+        end
+        files.flatten.map { |path| path.to_s }
+      end
+      private :_find_files
     end
   end
 end
