@@ -5,4 +5,4 @@
 
 Command-line interface for [Percy](https://percy.io).
 
-#### Docs here: [https://percy.io/docs/static](https://percy.io/docs/static)
+#### Docs here: [https://percy.io/docs/clients/ruby/cli](https://percy.io/docs/clients/ruby/cli)
