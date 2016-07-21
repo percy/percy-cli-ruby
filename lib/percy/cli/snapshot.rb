@@ -115,6 +115,8 @@ module Percy
 
         file_paths = []
         _find_files(dir_path).each do |path|
+          # Skip git files.
+          next if path.match(/\/\.git\//)
           # Skip files that don't match the snapshots_regex.
           next if !path.match(snapshots_regex)
           file_paths << path
@@ -125,8 +127,8 @@ module Percy
       def find_resource_paths(dir_path)
         file_paths = []
         _find_files(dir_path).each do |path|
-          # Skip dot files.
-          next if path.match(/\/\./)
+          # Skip git files.
+          next if path.match(/\/\.git\//)
           # Only include files with the above static extensions.
           next if !Percy::Cli::STATIC_RESOURCE_EXTENSIONS.include?(File.extname(path))
 
