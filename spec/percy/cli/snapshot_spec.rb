@@ -41,6 +41,13 @@ RSpec.describe Percy::Cli::Snapshot do
       expect(result).to eq(nil)
       expect(cli.send(:failed?)).to eq(true)
     end
+    it 'makes block safe from UnauthorizedError' do
+      result = cli.send(:rescue_connection_failures) do
+        raise Percy::Client::UnauthorizedError.new(401, 'GET', '', '')
+      end
+      expect(result).to eq(nil)
+      expect(cli.send(:failed?)).to eq(true)
+    end
     it 'makes block safe from TimeoutError' do
       result = cli.send(:rescue_connection_failures) do
         raise Percy::Client::TimeoutError

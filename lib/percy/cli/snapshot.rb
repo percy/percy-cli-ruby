@@ -101,6 +101,7 @@ module Percy
         begin
           block.call
         rescue Percy::Client::ServerError,  # Rescue server errors.
+            Percy::Client::UnauthorizedError,  # Rescue unauthorized errors (no auth creds setup).
             Percy::Client::PaymentRequiredError,  # Rescue quota exceeded errors.
             Percy::Client::ConnectionFailed,  # Rescue some networking errors.
             Percy::Client::TimeoutError => e
