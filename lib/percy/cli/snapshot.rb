@@ -11,7 +11,7 @@ module Percy
     module Snapshot
       # Static resource types that an HTML file might load and that we want to upload for rendering.
       STATIC_RESOURCE_EXTENSIONS = [
-        '.css', '.jpg', '.jpeg', '.gif', '.ico', '.png', '.bmp', '.pict', '.tif', '.tiff', '.ttf',
+        '.css', '.js', '.jpg', '.jpeg', '.gif', '.ico', '.png', '.bmp', '.pict', '.tif', '.tiff', '.ttf',
         '.eot', '.woff', '.otf', '.svg', '.svgz', '.webp', '.ps',
       ].freeze
 
