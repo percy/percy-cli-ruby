@@ -59,6 +59,9 @@ module Percy
           '--[no-]enable_javascript',
           "Whether or not to enable JavaScript when rendering all snapshots. Default false."
         c.option \
+          '--include_all',
+          "Whether to include all files in the directory as resources. By default only common website related file types are included."
+        c.option \
           '--threads NUM',
           Integer,
           "Number of threads in pools for snapshot and resource uploads. " +
@@ -68,6 +71,7 @@ module Percy
           options.default threads: DEFAULT_NUM_THREADS
           options.threads = MAX_NUM_THREADS if options.threads > MAX_NUM_THREADS
           options.enable_javascript = options.enable_javascript
+          options.include_all = options.include_all
           options.widths = (options.widths || '').split(',')
 
           raise OptionParser::MissingArgument, 'root folder path is required' if args.empty?

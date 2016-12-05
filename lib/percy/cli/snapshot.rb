@@ -25,6 +25,7 @@ module Percy
         snapshot_limit = options[:snapshot_limit]
         baseurl = options[:baseurl] || '/'
         enable_javascript = !!options[:enable_javascript]
+        include_all = !!options[:include_all]
         widths = options[:widths].map { |w| Integer(w) }
         raise ArgumentError.new('baseurl must start with /') if baseurl[0] != '/'
 
@@ -32,7 +33,7 @@ module Percy
 
         # Find all the static files in the given root directory.
         root_paths = find_root_paths(root_dir, snapshots_regex: options[:snapshots_regex])
-        resource_paths = find_resource_paths(root_dir)
+        resource_paths = find_resource_paths(root_dir, include_all: include_all)
         root_resources = list_resources(root_paths, base_resource_options.merge(is_root: true))
         build_resources = list_resources(resource_paths, base_resource_options)
         all_resources = root_resources + build_resources
@@ -126,13 +127,16 @@ module Percy
         file_paths
       end
 
-      def find_resource_paths(dir_path)
+      def find_resource_paths(dir_path, options = {})
         file_paths = []
         _find_files(dir_path).each do |path|
           # Skip git files.
           next if path.match(/\/\.git\//)
-          # Only include files with the above static extensions.
-          next if !Percy::Cli::STATIC_RESOURCE_EXTENSIONS.include?(File.extname(path))
+
+          if !options[:include_all]
+            # Only include files with the above static extensions.
+            next if !Percy::Cli::STATIC_RESOURCE_EXTENSIONS.include?(File.extname(path))
+          end
 
           file_paths << path
         end
