@@ -128,19 +128,7 @@ module Percy
       end
 
       def find_resource_paths(dir_path, options = {})
-        file_paths = []
-        _find_files(dir_path).each do |path|
-          # Skip git files.
-          next if path =~ /\/\.git\//
-
-          unless options[:include_all]
-            # Only include files with the above static extensions.
-            next unless Percy::Cli::STATIC_RESOURCE_EXTENSIONS.include?(File.extname(path))
-          end
-
-          file_paths << path
-        end
-        file_paths
+        _find_files(dir_path).select { |path| _include_reource_path?(path, options) }
       end
 
       def maybe_add_protocol(url)
@@ -208,7 +196,15 @@ module Percy
         end
         files.flatten.map(&:to_s)
       end
-      private :_find_files
+
+      def _include_reource_path?(path, options)
+        # Skip git files.
+        return false if path =~ /\/\.git\//
+        return true if options[:include_all]
+        Percy::Cli::STATIC_RESOURCE_EXTENSIONS.include?(File.extname(path))
+      end
+
+      private :_find_files, :_include_reource_path?
     end
   end
 end
