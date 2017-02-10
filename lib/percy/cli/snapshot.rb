@@ -11,8 +11,8 @@ module Percy
     module Snapshot
       # Static resource types that an HTML file might load and that we want to upload for rendering.
       STATIC_RESOURCE_EXTENSIONS = [
-        '.css', '.js', '.jpg', '.jpeg', '.gif', '.ico', '.png', '.bmp', '.pict', '.tif', '.tiff', '.ttf',
-        '.eot', '.woff', '.otf', '.svg', '.svgz', '.webp', '.ps',
+        '.css', '.js', '.jpg', '.jpeg', '.gif', '.ico', '.png', '.bmp', '.pict', '.tif', '.tiff',
+        '.ttf', '.eot', '.woff', '.otf', '.svg', '.svgz', '.webp', '.ps',
       ].freeze
 
       DEFAULT_SNAPSHOTS_REGEX = /\.(html|htm)$/
@@ -182,12 +182,12 @@ module Percy
           uploader_thread_pool.process do
             missing_resource_sha = missing_resource['id']
             resource = potential_resources.find { |r| r.sha == missing_resource_sha }
-            path = resource.resource_url
             output_lock.synchronize do
               bar.increment resource_url: resource.resource_url
             end
 
-            # Remote resources are stored in 'content', local resources are read from the filesystem.
+            # Remote resources are stored in 'content', local resources are
+            # read from the filesystem.
             content = resource.content || File.read("#{resource.path}")
 
             Percy.upload_resource(build['data']['id'], content)

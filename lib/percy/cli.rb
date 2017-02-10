@@ -60,7 +60,8 @@ module Percy
           "Whether or not to enable JavaScript when rendering all snapshots. Default false."
         c.option \
           '--include_all',
-          "Whether to include all files in the directory as resources. By default only common website related file types are included."
+          "Whether to include all files in the directory as resources. By default only common ' +
+          'website related file types are included."
         c.option \
           '--threads NUM',
           Integer,
@@ -88,5 +89,3 @@ module Percy
     end
   end
 end
-
-
