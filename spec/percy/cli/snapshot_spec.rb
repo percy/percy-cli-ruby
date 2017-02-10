@@ -62,30 +62,34 @@ RSpec.describe Percy::Cli::Snapshot do
   describe '#find_root_paths' do
     it 'returns only the HTML files in the directory' do
       paths = Percy::Cli.new.send(:find_root_paths, root_dir)
-      expect(paths).to match_array([
-        File.join(root_dir, 'index.html'),
-        File.join(root_dir, 'subdir/test.html'),
-        # Make sure file symlinks are followed.
-        File.join(root_dir, 'subdir/test_symlink.html'),
-        # Make sure directory symlinks are followed.
-        File.join(root_dir, 'subdir_symlink/test.html'),
-        File.join(root_dir, 'subdir_symlink/test_symlink.html'),
-      ],)
+      expect(paths).to match_array(
+        [
+          File.join(root_dir, 'index.html'),
+          File.join(root_dir, 'subdir/test.html'),
+          # Make sure file symlinks are followed.
+          File.join(root_dir, 'subdir/test_symlink.html'),
+          # Make sure directory symlinks are followed.
+          File.join(root_dir, 'subdir_symlink/test.html'),
+          File.join(root_dir, 'subdir_symlink/test_symlink.html'),
+        ],
+      )
     end
   end
   describe '#find_resource_paths' do
     it 'returns only the related static files in the directory' do
       paths = Percy::Cli.new.send(:find_resource_paths, root_dir)
-      expect(paths).to match_array([
-        File.join(root_dir, 'css/base.css'),
-        File.join(root_dir, 'css/test with spaces.css'),
-        File.join(root_dir, 'images/jellybeans.png'),
-        # Make sure file symlinks are followed.
-        File.join(root_dir, 'images/jellybeans-symlink.png'),
-        # Make sure directory symlinks are followed.
-        File.join(root_dir, 'images_symlink/jellybeans.png'),
-        File.join(root_dir, 'images_symlink/jellybeans-symlink.png'),
-      ],)
+      expect(paths).to match_array(
+        [
+          File.join(root_dir, 'css/base.css'),
+          File.join(root_dir, 'css/test with spaces.css'),
+          File.join(root_dir, 'images/jellybeans.png'),
+          # Make sure file symlinks are followed.
+          File.join(root_dir, 'images/jellybeans-symlink.png'),
+          # Make sure directory symlinks are followed.
+          File.join(root_dir, 'images_symlink/jellybeans.png'),
+          File.join(root_dir, 'images_symlink/jellybeans-symlink.png'),
+        ],
+      )
     end
   end
   describe '#list_resources' do
