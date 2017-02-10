@@ -114,21 +114,11 @@ module Percy
       end
 
       def find_root_paths(dir_path, options = {})
-        snapshots_regex = options[:snapshots_regex] || DEFAULT_SNAPSHOTS_REGEX
-
-        file_paths = []
-        _find_files(dir_path).each do |path|
-          # Skip git files.
-          next if path =~ /\/\.git\//
-          # Skip files that don't match the snapshots_regex.
-          next unless path.match(snapshots_regex)
-          file_paths << path
-        end
-        file_paths
+        find_files(dir_path).select { |path| include_root_path?(path, options) }
       end
 
       def find_resource_paths(dir_path, options = {})
-        _find_files(dir_path).select { |path| _include_reource_path?(path, options) }
+        find_files(dir_path).select { |path| include_resource_path?(path, options) }
       end
 
       def maybe_add_protocol(url)
@@ -187,24 +177,30 @@ module Percy
       end
 
       # A file find method that follows directory and file symlinks.
-      def _find_files(*paths)
+      def find_files(*paths)
         paths.flatten!
         paths.map! { |p| Pathname.new(p) }
         files = paths.select(&:file?)
         (paths - files).each do |dir|
-          files << _find_files(dir.children)
+          files << find_files(dir.children)
         end
         files.flatten.map(&:to_s)
       end
 
-      def _include_reource_path?(path, options)
+      def include_resource_path?(path, options)
         # Skip git files.
         return false if path =~ /\/\.git\//
         return true if options[:include_all]
         Percy::Cli::STATIC_RESOURCE_EXTENSIONS.include?(File.extname(path))
       end
 
-      private :_find_files, :_include_reource_path?
+      def include_root_path?(path, options)
+        # Skip git files.
+        return false if path =~ /\/\.git\//
+        # Skip files that don't match the snapshots_regex.
+        snapshots_regex = options[:snapshots_regex] || DEFAULT_SNAPSHOTS_REGEX
+        path.match(snapshots_regex)
+      end
     end
   end
 end
