@@ -29,6 +29,6 @@ RSpec.configure do |config|
     WebMock.disable_net_connect!(allow: [
       'maxcdn.bootstrapcdn.com',
       'ajax.googleapis.com',
-    ])
+    ],)
   end
 end

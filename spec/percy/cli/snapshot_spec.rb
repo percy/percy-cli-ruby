@@ -70,7 +70,7 @@ RSpec.describe Percy::Cli::Snapshot do
         # Make sure directory symlinks are followed.
         File.join(root_dir, 'subdir_symlink/test.html'),
         File.join(root_dir, 'subdir_symlink/test_symlink.html'),
-      ])
+      ],)
     end
   end
   describe '#find_resource_paths' do
@@ -85,7 +85,7 @@ RSpec.describe Percy::Cli::Snapshot do
         # Make sure directory symlinks are followed.
         File.join(root_dir, 'images_symlink/jellybeans.png'),
         File.join(root_dir, 'images_symlink/jellybeans-symlink.png'),
-      ])
+      ],)
     end
   end
   describe '#list_resources' do

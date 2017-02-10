@@ -27,7 +27,7 @@ module Percy
         enable_javascript = !!options[:enable_javascript]
         include_all = !!options[:include_all]
         widths = options[:widths].map { |w| Integer(w) }
-        raise ArgumentError.new('baseurl must start with /') if baseurl[0] != '/'
+        raise ArgumentError, 'baseurl must start with /' if baseurl[0] != '/'
 
         base_resource_options = {strip_prefix: strip_prefix, baseurl: baseurl}
 
@@ -39,7 +39,7 @@ module Percy
         all_resources = root_resources + build_resources
 
         if root_resources.empty?
-          say "No root resource files found. Are there HTML files in the given directory?"
+          say 'No root resource files found. Are there HTML files in the given directory?'
           exit(-1)
         end
 
@@ -52,7 +52,7 @@ module Percy
           build = Percy.create_build(repo, resources: build_resources)
 
           say 'Uploading build resources...'
-          upload_missing_resources(build, build, all_resources, {num_threads: num_threads})
+          upload_missing_resources(build, build, all_resources, num_threads: num_threads)
 
           build
         end
@@ -66,7 +66,7 @@ module Percy
           break if snapshot_limit && i + 1 > snapshot_limit
           snapshot_thread_pool.process do
             output_lock.synchronize do
-              say "Uploading snapshot (#{i+1}/#{total}): #{root_resource.resource_url}"
+              say "Uploading snapshot (#{i + 1}/#{total}): #{root_resource.resource_url}"
             end
             rescue_connection_failures do
               snapshot = Percy.create_snapshot(
@@ -75,7 +75,7 @@ module Percy
                 enable_javascript: enable_javascript,
                 widths: widths,
               )
-              upload_missing_resources(build, snapshot, all_resources, {num_threads: num_threads})
+              upload_missing_resources(build, snapshot, all_resources, num_threads: num_threads)
               Percy.finalize_snapshot(snapshot['data']['id'])
             end
           end
@@ -87,7 +87,7 @@ module Percy
         say 'Finalizing build...'
         rescue_connection_failures { Percy.finalize_build(build['data']['id']) }
         return if failed?
-        say "Done! Percy is now processing, you can view the visual diffs here:"
+        say 'Done! Percy is now processing, you can view the visual diffs here:'
         say build['data']['attributes']['web-url']
       end
 
@@ -97,16 +97,16 @@ module Percy
         !!@failed
       end
 
-      def rescue_connection_failures(&block)
-        raise ArgumentError.new('block is requried') if !block_given?
+      def rescue_connection_failures
+        raise ArgumentError, 'block is requried' unless block_given?
         begin
-          block.call
-        rescue Percy::Client::ServerError,  # Rescue server errors.
-            Percy::Client::UnauthorizedError,  # Rescue unauthorized errors (no auth creds setup).
-            Percy::Client::PaymentRequiredError,  # Rescue quota exceeded errors.
-            Percy::Client::ConflictError,  # Rescue project disabled errors and others.
-            Percy::Client::ConnectionFailed,  # Rescue some networking errors.
-            Percy::Client::TimeoutError => e
+          yield
+        rescue Percy::Client::ServerError, # Rescue server errors.
+               Percy::Client::UnauthorizedError, # Rescue unauthorized errors (no auth creds setup).
+               Percy::Client::PaymentRequiredError, # Rescue quota exceeded errors.
+               Percy::Client::ConflictError, # Rescue project disabled errors and others.
+               Percy::Client::ConnectionFailed, # Rescue some networking errors.
+               Percy::Client::TimeoutError => e
           Percy.logger.error(e)
           @failed = true
           nil
@@ -119,9 +119,9 @@ module Percy
         file_paths = []
         _find_files(dir_path).each do |path|
           # Skip git files.
-          next if path.match(/\/\.git\//)
+          next if path =~ /\/\.git\//
           # Skip files that don't match the snapshots_regex.
-          next if !path.match(snapshots_regex)
+          next unless path.match(snapshots_regex)
           file_paths << path
         end
         file_paths
@@ -131,11 +131,11 @@ module Percy
         file_paths = []
         _find_files(dir_path).each do |path|
           # Skip git files.
-          next if path.match(/\/\.git\//)
+          next if path =~ /\/\.git\//
 
-          if !options[:include_all]
+          unless options[:include_all]
             # Only include files with the above static extensions.
-            next if !Percy::Cli::STATIC_RESOURCE_EXTENSIONS.include?(File.extname(path))
+            next unless Percy::Cli::STATIC_RESOURCE_EXTENSIONS.include?(File.extname(path))
           end
 
           file_paths << path
@@ -160,7 +160,8 @@ module Percy
           resource_url = URI.escape(File.join(baseurl, path.sub(strip_prefix, '')))
 
           resources << Percy::Client::Resource.new(
-            resource_url, sha: sha, is_root: options[:is_root], path: path)
+            resource_url, sha: sha, is_root: options[:is_root], path: path,
+          )
         end
         resources
       end
@@ -188,7 +189,7 @@ module Percy
 
             # Remote resources are stored in 'content', local resources are
             # read from the filesystem.
-            content = resource.content || File.read("#{resource.path}")
+            content = resource.content || File.read(resource.path.to_s)
 
             Percy.upload_resource(build['data']['id'], content)
           end
@@ -201,11 +202,11 @@ module Percy
       def _find_files(*paths)
         paths.flatten!
         paths.map! { |p| Pathname.new(p) }
-        files = paths.select { |p| p.file? }
+        files = paths.select(&:file?)
         (paths - files).each do |dir|
           files << _find_files(dir.children)
         end
-        files.flatten.map { |path| path.to_s }
+        files.flatten.map(&:to_s)
       end
       private :_find_files
     end
