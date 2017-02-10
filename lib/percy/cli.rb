@@ -32,8 +32,8 @@ module Percy
         c.option \
           '--baseurl PATH',
           String,
-          'The live URL base path. Defaults to "/". Set this if your site is hosted in ' +
-          'a subdirectory in production that does not exist locally. If using Jekyll, this ' +
+          'The live URL base path. Defaults to "/". Set this if your site is hosted in ' \
+          'a subdirectory in production that does not exist locally. If using Jekyll, this ' \
           'should be the same as your "baseurl" config.'
         c.option \
           '--strip_prefix PATH',
@@ -54,17 +54,18 @@ module Percy
         c.option \
           '--snapshot_limit NUM',
           Integer,
-          "Max number of snapshots to upload, useful for testing. Default is unlimited."
+          'Max number of snapshots to upload, useful for testing. Default is unlimited.'
         c.option \
           '--[no-]enable_javascript',
-          "Whether or not to enable JavaScript when rendering all snapshots. Default false."
+          'Whether or not to enable JavaScript when rendering all snapshots. Default false.'
         c.option \
           '--include_all',
-          "Whether to include all files in the directory as resources. By default only common website related file types are included."
+          "Whether to include all files in the directory as resources. By default only common ' +
+          'website related file types are included."
         c.option \
           '--threads NUM',
           Integer,
-          "Number of threads in pools for snapshot and resource uploads. " +
+          'Number of threads in pools for snapshot and resource uploads. ' \
           "Defaults to #{DEFAULT_NUM_THREADS}, max #{MAX_NUM_THREADS}."
 
         c.action do |args, options|
@@ -88,5 +89,3 @@ module Percy
     end
   end
 end
-
-

@@ -26,9 +26,11 @@ RSpec.configure do |config|
   Kernel.srand config.seed
 
   config.before(:each) do
-    WebMock.disable_net_connect!(allow: [
-      'maxcdn.bootstrapcdn.com',
-      'ajax.googleapis.com',
-    ])
+    WebMock.disable_net_connect!(
+      allow: [
+        'maxcdn.bootstrapcdn.com',
+        'ajax.googleapis.com',
+      ],
+    )
   end
 end

@@ -3,4 +3,9 @@ rvm:
   - 2.1
   - 2.2
   - ruby-head
-script: bundle exec rspec
+before_install:
+  - gem update --system
+  - gem update bundler
+script:
+  - bundle exec rspec
+  - bundle exec rubocop -D
