@@ -83,10 +83,12 @@ RSpec.describe Percy::Cli::Snapshot do
           File.join(root_dir, 'css/base.css'),
           File.join(root_dir, 'css/test with spaces.css'),
           File.join(root_dir, 'images/jellybeans.png'),
+          File.join(root_dir, 'images/large-file-skipped.png'),
           # Make sure file symlinks are followed.
           File.join(root_dir, 'images/jellybeans-symlink.png'),
           # Make sure directory symlinks are followed.
           File.join(root_dir, 'images_symlink/jellybeans.png'),
+          File.join(root_dir, 'images_symlink/large-file-skipped.png'),
           File.join(root_dir, 'images_symlink/jellybeans-symlink.png'),
         ],
       )
