@@ -13,6 +13,7 @@ RSpec.describe Percy::Cli::Snapshot do
   end
   describe '#rescue_connection_failures' do
     let(:cli) { Percy::Cli.new }
+
     it 'returns block result on success' do
       result = cli.send(:rescue_connection_failures) do
         true
