@@ -12,7 +12,7 @@ Lint/EndAlignment:
   EnforcedStyleAlignWith: variable
 
 Metrics/LineLength:
-  Max: 101
+  Max: 100
 
 Metrics/BlockLength:
   Enabled: false
