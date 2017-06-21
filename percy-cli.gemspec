@@ -1,4 +1,5 @@
 # coding: utf-8
+
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'percy/cli/version'
@@ -19,7 +20,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_dependency 'commander', '~> 4.3'
-  spec.add_dependency 'percy-client', '~> 1.4'
+  spec.add_dependency 'percy-client', '~> 1.12'
   spec.add_dependency 'thread', '~> 0.2'
 
   spec.add_development_dependency 'bundler', '~> 1.7'

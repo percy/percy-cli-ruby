@@ -16,6 +16,7 @@ module Percy
       ].freeze
 
       DEFAULT_SNAPSHOTS_REGEX = /\.(html|htm)$/
+      MAX_FILESIZE_BYTES = 15 * 1024**2 # 15 MB.
 
       def run_snapshot(root_dir, options = {})
         repo = options[:repo] || Percy.config.repo
@@ -135,6 +136,7 @@ module Percy
 
         paths.each do |path|
           sha = Digest::SHA256.hexdigest(File.read(path))
+          next if File.size(path) > MAX_FILESIZE_BYTES
           resource_url = URI.escape(File.join(baseurl, path.sub(strip_prefix, '')))
 
           resources << Percy::Client::Resource.new(

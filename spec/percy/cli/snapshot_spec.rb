@@ -13,6 +13,7 @@ RSpec.describe Percy::Cli::Snapshot do
   end
   describe '#rescue_connection_failures' do
     let(:cli) { Percy::Cli.new }
+
     it 'returns block result on success' do
       result = cli.send(:rescue_connection_failures) do
         true
@@ -83,10 +84,12 @@ RSpec.describe Percy::Cli::Snapshot do
           File.join(root_dir, 'css/base.css'),
           File.join(root_dir, 'css/test with spaces.css'),
           File.join(root_dir, 'images/jellybeans.png'),
+          File.join(root_dir, 'images/large-file-skipped.png'),
           # Make sure file symlinks are followed.
           File.join(root_dir, 'images/jellybeans-symlink.png'),
           # Make sure directory symlinks are followed.
           File.join(root_dir, 'images_symlink/jellybeans.png'),
+          File.join(root_dir, 'images_symlink/large-file-skipped.png'),
           File.join(root_dir, 'images_symlink/jellybeans-symlink.png'),
         ],
       )
