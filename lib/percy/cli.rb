@@ -2,7 +2,6 @@ require 'commander'
 require 'percy'
 require 'percy/cli/version'
 require 'percy/cli/snapshot'
-require 'percy/cli/client'
 
 module Percy
   class Cli

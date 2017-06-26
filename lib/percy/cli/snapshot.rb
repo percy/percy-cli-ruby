@@ -2,6 +2,7 @@ require 'find'
 require 'digest'
 require 'uri'
 require 'thread/pool'
+require 'percy/cli/client'
 
 Thread.abort_on_exception = true
 Thread::Pool.abort_on_exception = true
