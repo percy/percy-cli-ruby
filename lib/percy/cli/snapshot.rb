@@ -32,6 +32,8 @@ module Percy
 
         base_resource_options = {strip_prefix: strip_prefix, baseurl: baseurl}
 
+        Percy::Cli::Client.new
+
         # Find all the static files in the given root directory.
         root_paths = find_root_paths(root_dir, snapshots_regex: options[:snapshots_regex])
         resource_paths = find_resource_paths(root_dir, include_all: include_all)

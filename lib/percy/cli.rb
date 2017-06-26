@@ -84,7 +84,6 @@ module Percy
 
           root_dir = args.first
 
-          Percy::Cli::Client.new
           run_snapshot(root_dir, options.__hash__)
         end
       end
