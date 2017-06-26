@@ -94,6 +94,9 @@ Style/TrailingCommaInLiteral:
 RSpec/DescribedClass:
   EnforcedStyle: explicit
 
+RSpec/ExampleLength:
+  Max: 15
+
 RSpec/HookArgument:
   EnforcedStyle: each
 
