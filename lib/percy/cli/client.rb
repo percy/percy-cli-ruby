@@ -8,7 +8,9 @@ module Percy
       attr_reader :client
 
       def initialize
-        @client = Percy.client(client_info: _client_info, environment_info: _environment_info)
+        # environment_info is empty because we can't tell reliably from raw HTML files what versions
+        # of which frameworks were used to generate them.
+        @client = Percy.client(client_info: _client_info, environment_info: '')
       end
     end
   end
