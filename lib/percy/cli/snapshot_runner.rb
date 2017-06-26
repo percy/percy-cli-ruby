@@ -2,14 +2,15 @@ require 'find'
 require 'digest'
 require 'uri'
 require 'thread/pool'
-require 'percy/cli/client'
 
 Thread.abort_on_exception = true
 Thread::Pool.abort_on_exception = true
 
 module Percy
   class Cli
-    module Snapshot
+    class SnapshotRunner
+      attr_reader :client
+
       # Static resource types that an HTML file might load and that we want to upload for rendering.
       STATIC_RESOURCE_EXTENSIONS = [
         '.css', '.js', '.jpg', '.jpeg', '.gif', '.ico', '.png', '.bmp', '.pict', '.tif', '.tiff',
@@ -19,7 +20,11 @@ module Percy
       DEFAULT_SNAPSHOTS_REGEX = /\.(html|htm)$/
       MAX_FILESIZE_BYTES = 15 * 1024**2 # 15 MB.
 
-      def run_snapshot(root_dir, options = {})
+      def initialize
+        @client = Percy::Client.new(client_info: "percy-cli/#{VERSION}", environment_info: '')
+      end
+
+      def run(root_dir, options = {})
         repo = options[:repo] || Percy.config.repo
         root_dir = File.expand_path(File.absolute_path(root_dir))
         strip_prefix = File.expand_path(File.absolute_path(options[:strip_prefix] || root_dir))
@@ -32,8 +37,6 @@ module Percy
         raise ArgumentError, 'baseurl must start with /' if baseurl[0] != '/'
 
         base_resource_options = {strip_prefix: strip_prefix, baseurl: baseurl}
-
-        Percy::Cli::Client.new
 
         # Find all the static files in the given root directory.
         root_paths = find_root_paths(root_dir, snapshots_regex: options[:snapshots_regex])
@@ -54,7 +57,7 @@ module Percy
         build = rescue_connection_failures do
           say 'Creating build...'
 
-          build = Percy.create_build(repo, resources: build_resources)
+          build = client.create_build(repo, resources: build_resources)
 
           say 'Uploading build resources...'
           upload_missing_resources(build, build, all_resources, num_threads: num_threads)
@@ -77,14 +80,14 @@ module Percy
             end
 
             rescue_connection_failures do
-              snapshot = Percy.create_snapshot(
+              snapshot = client.create_snapshot(
                 build['data']['id'],
                 [root_resource],
                 enable_javascript: enable_javascript,
                 widths: widths,
               )
               upload_missing_resources(build, snapshot, all_resources, num_threads: num_threads)
-              Percy.finalize_snapshot(snapshot['data']['id'])
+              client.finalize_snapshot(snapshot['data']['id'])
             end
           end
         end
@@ -94,7 +97,7 @@ module Percy
 
         # Finalize the build.
         say 'Finalizing build...'
-        rescue_connection_failures { Percy.finalize_build(build['data']['id']) }
+        rescue_connection_failures { client.finalize_build(build['data']['id']) }
 
         return if failed?
 
@@ -186,7 +189,7 @@ module Percy
             # read from the filesystem.
             content = resource.content || File.read(resource.path.to_s)
 
-            Percy.upload_resource(build['data']['id'], content)
+            client.upload_resource(build['data']['id'], content)
           end
         end
 
@@ -212,7 +215,7 @@ module Percy
         return false if path =~ /\/\.git\//
         return true if options[:include_all]
 
-        Percy::Cli::STATIC_RESOURCE_EXTENSIONS.include?(File.extname(path))
+        STATIC_RESOURCE_EXTENSIONS.include?(File.extname(path))
       end
 
       def include_root_path?(path, options)

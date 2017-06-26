@@ -1,82 +1,88 @@
 require 'digest'
 
-RSpec.describe Percy::Cli::Snapshot do
+RSpec.describe Percy::Cli::SnapshotRunner do
+  subject(:runner) { Percy::Cli::SnapshotRunner.new }
+
   let(:root_dir) { File.expand_path('../testdata/', __FILE__) }
 
   # Used for testing that paths are collapsed before use.r
   let(:root_dir_relative) { root_dir + '/../testdata' }
 
-  describe '#run_snapshot' do
+  describe '#initialize' do
+    it 'passes client info down to the lower level Percy client' do
+      expect(runner.client.client_info).to eq("percy-cli/#{Percy::Cli::VERSION}")
+    end
+  end
+
+  describe '#run' do
     xit 'snapshots a root directory of static files' do
       # TODO(fotinakis): tests for the full flow.
     end
   end
 
   describe '#rescue_connection_failures' do
-    let(:cli) { Percy::Cli.new }
-
     it 'returns block result on success' do
-      result = cli.send(:rescue_connection_failures) do
+      result = runner.send(:rescue_connection_failures) do
         true
       end
 
       expect(result).to eq(true)
-      expect(cli.send(:failed?)).to eq(false)
+      expect(runner.send(:failed?)).to eq(false)
     end
 
     it 'makes block safe from quota exceeded errors' do
-      result = cli.send(:rescue_connection_failures) do
+      result = runner.send(:rescue_connection_failures) do
         raise Percy::Client::PaymentRequiredError.new(409, 'POST', '', '')
       end
 
       expect(result).to eq(nil)
-      expect(cli.send(:failed?)).to eq(true)
+      expect(runner.send(:failed?)).to eq(true)
     end
 
     it 'makes block safe from server errors' do
-      result = cli.send(:rescue_connection_failures) do
+      result = runner.send(:rescue_connection_failures) do
         raise Percy::Client::ServerError.new(502, 'POST', '', '')
       end
 
       expect(result).to eq(nil)
-      expect(cli.send(:failed?)).to eq(true)
+      expect(runner.send(:failed?)).to eq(true)
     end
 
     it 'makes block safe from ConnectionFailed' do
-      result = cli.send(:rescue_connection_failures) do
+      result = runner.send(:rescue_connection_failures) do
         raise Percy::Client::ConnectionFailed
       end
 
       expect(result).to eq(nil)
-      expect(cli.send(:failed?)).to eq(true)
+      expect(runner.send(:failed?)).to eq(true)
     end
 
     it 'makes block safe from UnauthorizedError' do
-      result = cli.send(:rescue_connection_failures) do
+      result = runner.send(:rescue_connection_failures) do
         raise Percy::Client::UnauthorizedError.new(401, 'GET', '', '')
       end
 
       expect(result).to eq(nil)
-      expect(cli.send(:failed?)).to eq(true)
+      expect(runner.send(:failed?)).to eq(true)
     end
 
     it 'makes block safe from TimeoutError' do
-      result = cli.send(:rescue_connection_failures) do
+      result = runner.send(:rescue_connection_failures) do
         raise Percy::Client::TimeoutError
       end
 
       expect(result).to eq(nil)
-      expect(cli.send(:failed?)).to eq(true)
+      expect(runner.send(:failed?)).to eq(true)
     end
 
     it 'requires a block' do
-      expect { cli.send(:rescue_connection_failures) }.to raise_error(ArgumentError)
+      expect { runner.send(:rescue_connection_failures) }.to raise_error(ArgumentError)
     end
   end
 
   describe '#find_root_paths' do
     it 'returns only the HTML files in the directory' do
-      paths = Percy::Cli.new.send(:find_root_paths, root_dir)
+      paths = runner.send(:find_root_paths, root_dir)
 
       expect(paths).to match_array(
         [
@@ -94,7 +100,7 @@ RSpec.describe Percy::Cli::Snapshot do
 
   describe '#find_resource_paths' do
     it 'returns only the related static files in the directory' do
-      paths = Percy::Cli.new.send(:find_resource_paths, root_dir)
+      paths = runner.send(:find_resource_paths, root_dir)
 
       expect(paths).to match_array(
         [
@@ -117,7 +123,7 @@ RSpec.describe Percy::Cli::Snapshot do
     it 'returns resource objects' do
       paths = [File.join(root_dir, 'css/base.css')]
       options = {baseurl: '/', strip_prefix: root_dir}
-      resources = Percy::Cli.new.send(:list_resources, paths, options)
+      resources = runner.send(:list_resources, paths, options)
 
       expect(resources.length).to eq(1)
       expect(resources.first.sha).to eq(Digest::SHA256.hexdigest(File.read(paths.first)))
@@ -129,7 +135,7 @@ RSpec.describe Percy::Cli::Snapshot do
     it 'correctly strips the prefix from resource_url' do
       paths = [File.join(root_dir, 'index.html')]
       options = {baseurl: '/', strip_prefix: root_dir_relative, is_root: true}
-      resources = Percy::Cli.new.send(:list_resources, paths, options)
+      resources = runner.send(:list_resources, paths, options)
 
       expect(resources.length).to eq(1)
       expect(resources.first.resource_url).to eq('/index.html')
@@ -138,7 +144,7 @@ RSpec.describe Percy::Cli::Snapshot do
     it 'returns resource objects with is_root set if given' do
       paths = [File.join(root_dir, 'index.html')]
       options = {baseurl: '/', strip_prefix: root_dir, is_root: true}
-      resources = Percy::Cli.new.send(:list_resources, paths, options)
+      resources = runner.send(:list_resources, paths, options)
 
       expect(resources.length).to eq(1)
       expect(resources.first.resource_url).to eq('/index.html')
@@ -151,7 +157,7 @@ RSpec.describe Percy::Cli::Snapshot do
     it 'encodes the resource_url' do
       paths = [File.join(root_dir, 'css/test with spaces.css')]
       options = {baseurl: '/', strip_prefix: root_dir}
-      resources = Percy::Cli.new.send(:list_resources, paths, options)
+      resources = runner.send(:list_resources, paths, options)
 
       expect(resources.length).to eq(1)
       expect(resources.first.resource_url).to eq('/css/test%20with%20spaces.css')
@@ -164,7 +170,7 @@ RSpec.describe Percy::Cli::Snapshot do
     it 'prepends the baseurl if given' do
       paths = [File.join(root_dir, 'index.html')]
       options = {strip_prefix: root_dir, is_root: true, baseurl: '/test baseurl/'}
-      resources = Percy::Cli.new.send(:list_resources, paths, options)
+      resources = runner.send(:list_resources, paths, options)
 
       expect(resources.length).to eq(1)
       expect(resources.first.resource_url).to eq('/test%20baseurl/index.html')
