@@ -11,7 +11,7 @@ module Percy
             "middleman/#{_middleman_version}",
             "jekyll/#{_jekyll_version}",
           ].reject do |info|
-            info =~ %r{\/$} # reject if version is empty
+            info =~ /\/$/ # reject if version is empty
           end.join('; ')
         end
 
@@ -19,14 +19,14 @@ module Percy
           begin
             require 'middleman-core/version'
             Middleman::VERSION if defined? Middleman
-          rescue LoadError; end
+          rescue LoadError; end # rubocop:disable HandleExceptions
         end
 
         def _jekyll_version
           begin
             require 'jekyll/version'
             Jekyll::VERSION if defined? Jekyll
-          rescue LoadError; end
+          rescue LoadError; end # rubocop:disable HandleExceptions
         end
       end
     end
