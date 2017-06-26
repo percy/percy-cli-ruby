@@ -50,6 +50,7 @@ module Percy
 
         build = rescue_connection_failures do
           say 'Creating build...'
+
           build = Percy.create_build(repo, resources: build_resources)
 
           say 'Uploading build resources...'
@@ -63,12 +64,15 @@ module Percy
         output_lock = Mutex.new
         snapshot_thread_pool = Thread.pool(num_threads)
         total = snapshot_limit ? [root_resources.length, snapshot_limit].min : root_resources.length
+
         root_resources.each_with_index do |root_resource, i|
           break if snapshot_limit && i + 1 > snapshot_limit
+
           snapshot_thread_pool.process do
             output_lock.synchronize do
               say "Uploading snapshot (#{i + 1}/#{total}): #{root_resource.resource_url}"
             end
+
             rescue_connection_failures do
               snapshot = Percy.create_snapshot(
                 build['data']['id'],
@@ -81,13 +85,16 @@ module Percy
             end
           end
         end
+
         snapshot_thread_pool.wait
         snapshot_thread_pool.shutdown
 
         # Finalize the build.
         say 'Finalizing build...'
         rescue_connection_failures { Percy.finalize_build(build['data']['id']) }
+
         return if failed?
+
         say 'Done! Percy is now processing, you can view the visual diffs here:'
         say build['data']['attributes']['web-url']
       end
@@ -108,6 +115,7 @@ module Percy
                Percy::Client::ConflictError, # Rescue project disabled errors and others.
                Percy::Client::ConnectionFailed, # Rescue some networking errors.
                Percy::Client::TimeoutError => e
+
           Percy.logger.error(e)
           @failed = true
           nil
@@ -150,6 +158,7 @@ module Percy
       def upload_missing_resources(build, obj, potential_resources, options = {})
         # Upload the content for any missing resources.
         missing_resources = obj['data']['relationships']['missing-resources']['data']
+
         bar = Commander::UI::ProgressBar.new(
           missing_resources.length,
           title: 'Uploading resources...',
@@ -157,12 +166,15 @@ module Percy
           width: 20,
           complete_message: nil,
         )
+
         output_lock = Mutex.new
         uploader_thread_pool = Thread.pool(options[:num_threads] || 10)
+
         missing_resources.each do |missing_resource|
           uploader_thread_pool.process do
             missing_resource_sha = missing_resource['id']
             resource = potential_resources.find { |r| r.sha == missing_resource_sha }
+
             output_lock.synchronize do
               bar.increment resource_url: resource.resource_url
             end
@@ -174,6 +186,7 @@ module Percy
             Percy.upload_resource(build['data']['id'], content)
           end
         end
+
         uploader_thread_pool.wait
         uploader_thread_pool.shutdown
       end
@@ -183,9 +196,11 @@ module Percy
         paths.flatten!
         paths.map! { |p| Pathname.new(p) }
         files = paths.select(&:file?)
+
         (paths - files).each do |dir|
           files << find_files(dir.children)
         end
+
         files.flatten.map(&:to_s)
       end
 
@@ -193,12 +208,14 @@ module Percy
         # Skip git files.
         return false if path =~ /\/\.git\//
         return true if options[:include_all]
+
         Percy::Cli::STATIC_RESOURCE_EXTENSIONS.include?(File.extname(path))
       end
 
       def include_root_path?(path, options)
         # Skip git files.
         return false if path =~ /\/\.git\//
+
         # Skip files that don't match the snapshots_regex.
         snapshots_regex = options[:snapshots_regex] || DEFAULT_SNAPSHOTS_REGEX
         path.match(snapshots_regex)

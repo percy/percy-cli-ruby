@@ -2,6 +2,7 @@ require 'commander'
 require 'percy'
 require 'percy/cli/version'
 require 'percy/cli/snapshot'
+require 'percy/cli/client'
 
 module Percy
   class Cli
@@ -76,11 +77,14 @@ module Percy
           options.widths = (options.widths || '').split(',')
 
           raise OptionParser::MissingArgument, 'root folder path is required' if args.empty?
+
           if args.length > 1
             raise OptionParser::MissingArgument, 'only a single root folder path can be given'
           end
+
           root_dir = args.first
 
+          Percy::Cli::Client.new
           run_snapshot(root_dir, options.__hash__)
         end
       end
