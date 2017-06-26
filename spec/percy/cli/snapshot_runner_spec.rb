@@ -22,12 +22,10 @@ RSpec.describe Percy::Cli::SnapshotRunner do
 
   describe '#rescue_connection_failures' do
     it 'returns block result on success' do
-      result = runner._rescue_connection_failures do
-        true
-      end
+      result = runner._rescue_connection_failures { true }
 
-      expect(result).to eq(true)
-      expect(runner._failed?).to eq(false)
+      expect(result).to be true
+      expect(runner._failed?).to be false
     end
 
     it 'makes block safe from quota exceeded errors' do
@@ -35,8 +33,8 @@ RSpec.describe Percy::Cli::SnapshotRunner do
         raise Percy::Client::PaymentRequiredError.new(409, 'POST', '', '')
       end
 
-      expect(result).to eq(nil)
-      expect(runner._failed?).to eq(true)
+      expect(result).to be_nil
+      expect(runner._failed?).to be true
     end
 
     it 'makes block safe from server errors' do
@@ -44,17 +42,15 @@ RSpec.describe Percy::Cli::SnapshotRunner do
         raise Percy::Client::ServerError.new(502, 'POST', '', '')
       end
 
-      expect(result).to eq(nil)
-      expect(runner._failed?).to eq(true)
+      expect(result).to be_nil
+      expect(runner._failed?).to be true
     end
 
     it 'makes block safe from ConnectionFailed' do
-      result = runner._rescue_connection_failures do
-        raise Percy::Client::ConnectionFailed
-      end
+      result = runner._rescue_connection_failures { raise Percy::Client::ConnectionFailed }
 
-      expect(result).to eq(nil)
-      expect(runner._failed?).to eq(true)
+      expect(result).to be_nil
+      expect(runner._failed?).to be true
     end
 
     it 'makes block safe from UnauthorizedError' do
@@ -62,17 +58,15 @@ RSpec.describe Percy::Cli::SnapshotRunner do
         raise Percy::Client::UnauthorizedError.new(401, 'GET', '', '')
       end
 
-      expect(result).to eq(nil)
-      expect(runner._failed?).to eq(true)
+      expect(result).to be_nil
+      expect(runner._failed?).to be true
     end
 
     it 'makes block safe from TimeoutError' do
-      result = runner._rescue_connection_failures do
-        raise Percy::Client::TimeoutError
-      end
+      result = runner._rescue_connection_failures { Percy::Client::TimeoutError }
 
-      expect(result).to eq(nil)
-      expect(runner._failed?).to eq(true)
+      expect(result).to be_nil
+      expect(runner._failed?).to be true
     end
 
     it 'requires a block' do
