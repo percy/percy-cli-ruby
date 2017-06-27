@@ -63,7 +63,7 @@ RSpec.describe Percy::Cli::SnapshotRunner do
     end
 
     it 'makes block safe from TimeoutError' do
-      result = runner._rescue_connection_failures { Percy::Client::TimeoutError }
+      result = runner._rescue_connection_failures { raise Percy::Client::TimeoutError }
 
       expect(result).to be_nil
       expect(runner._failed?).to be true
