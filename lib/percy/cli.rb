@@ -1,12 +1,11 @@
 require 'commander'
 require 'percy'
 require 'percy/cli/version'
-require 'percy/cli/snapshot'
+require 'percy/cli/snapshot_runner'
 
 module Percy
   class Cli
     include Commander::Methods
-    include Percy::Cli::Snapshot
 
     DEFAULT_NUM_THREADS = 3
     MAX_NUM_THREADS = 10
@@ -76,12 +75,15 @@ module Percy
           options.widths = (options.widths || '').split(',')
 
           raise OptionParser::MissingArgument, 'root folder path is required' if args.empty?
+
           if args.length > 1
             raise OptionParser::MissingArgument, 'only a single root folder path can be given'
           end
+
           root_dir = args.first
 
-          run_snapshot(root_dir, options.__hash__)
+          snapshot_runner = Percy::Cli::SnapshotRunner.new
+          snapshot_runner.run(root_dir, options.__hash__)
         end
       end
 

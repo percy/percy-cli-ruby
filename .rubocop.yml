@@ -8,44 +8,66 @@ AllCops:
     - 'vendor/**/*'
     - '*.gemspec'
 
+Layout/AlignParameters:
+  EnforcedStyle: with_fixed_indentation
+
+Layout/CaseIndentation:
+  EnforcedStyle: end
+
+Layout/IndentArray:
+  EnforcedStyle: consistent
+
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
+
+Layout/MultilineOperationIndentation:
+  EnforcedStyle: indented
+
+Layout/SpaceInsideHashLiteralBraces:
+  EnforcedStyle: no_space
+
 Lint/EndAlignment:
   EnforcedStyleAlignWith: variable
+
+Lint/RescueException:
+  Exclude:
+    - 'lib/tasks/*.rake'
+
+Metrics/AbcSize:
+  Max: 100
 
 Metrics/LineLength:
   Max: 100
 
-Metrics/BlockLength:
-  Enabled: false
-
-Style/AlignParameters:
-  EnforcedStyle: with_fixed_indentation
-
-Style/CaseIndentation:
-  EnforcedStyle: end
+Metrics/MethodLength:
+  Max: 80
 
 Style/Documentation:
+  Enabled: false
+
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/ModuleLength:
+  Enabled: false
+
+Metrics/ParameterLists:
+  Enabled: false
+
+Metrics/BlockLength:
   Enabled: false
 
 Style/DoubleNegation:
   Enabled: false
 
-Style/IndentArray:
-  EnforcedStyle: consistent
+Style/FileName:
+  Exclude: ['Gemfile', 'Guardfile']
 
-Style/MultilineMethodCallIndentation:
-  EnforcedStyle: indented
-
-Style/MultilineOperationIndentation:
-  EnforcedStyle: indented
+Style/FormatStringToken:
+  EnforcedStyle: template
 
 # Disable Style/NumericLiterals so numbers don't need underscores
 Style/NumericLiterals:
-  Enabled: false
-
-Style/FileName:
-  Enabled: false
-
-Style/SymbolArray:
   Enabled: false
 
 Style/NumericPredicate:
@@ -57,9 +79,11 @@ Style/RedundantBegin:
 Style/RegexpLiteral:
   EnforcedStyle: slashes
   AllowInnerSlashes: true
+  Exclude:
+    - 'Guardfile'
 
-Style/SpaceInsideHashLiteralBraces:
-  EnforcedStyle: no_space
+Style/SymbolArray:
+  EnforcedStyle: brackets
 
 Style/TrailingCommaInArguments:
   EnforcedStyleForMultiline: consistent_comma
@@ -67,13 +91,23 @@ Style/TrailingCommaInArguments:
 Style/TrailingCommaInLiteral:
   EnforcedStyleForMultiline: consistent_comma
 
+RSpec/DescribedClass:
+  EnforcedStyle: explicit
+
+RSpec/ExampleLength:
+  Max: 15
+
+RSpec/HookArgument:
+  EnforcedStyle: each
+
+RSpec/ImplicitExpect:
+  EnforcedStyle: should
+
 RSpec/MessageSpies:
   EnforcedStyle: receive
 
 RSpec/NotToNot:
+  EnforcedStyle: to_not
+
+RSpec/VerifiedDoubles:
   Enabled: false
-
-
-# Will be able to do this in >= v1.11
-# RSpec/DescribedClass:
-#   EnforcedStyle: explicit

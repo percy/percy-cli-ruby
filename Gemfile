@@ -7,3 +7,7 @@ group :test do
   gem 'rubocop'
   gem 'rubocop-rspec'
 end
+
+group :test, :development do
+  gem 'pry'
+end
