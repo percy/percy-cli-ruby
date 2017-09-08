@@ -15,7 +15,7 @@ module Percy
     end
 
     def say_error(*args)
-      STDERR.puts *args
+      STDERR.puts(*args)
     end
 
     def run
