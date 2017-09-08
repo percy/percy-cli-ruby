@@ -78,17 +78,23 @@ RSpec.describe Percy::Cli::SnapshotRunner do
     it 'returns only the HTML files in the directory' do
       paths = runner._find_root_paths root_dir
 
-      expect(paths).to match_array(
-        [
-          File.join(root_dir, 'index.html'),
-          File.join(root_dir, 'subdir/test.html'),
-          # Make sure file symlinks are followed.
-          File.join(root_dir, 'subdir/test_symlink.html'),
+      expected_results = [
+        File.join(root_dir, 'index.html'),
+        File.join(root_dir, 'subdir/test.html'),
+        # Make sure file symlinks are followed.
+        File.join(root_dir, 'subdir/test_symlink.html'),
+      ]
+
+      # Symlinked folders don't work out-of-the-box upon git clone on windows
+      unless Gem.win_platform?
+        expected_results += [
           # Make sure directory symlinks are followed.
           File.join(root_dir, 'subdir_symlink/test.html'),
           File.join(root_dir, 'subdir_symlink/test_symlink.html'),
-        ],
-      )
+        ]
+      end
+
+      expect(paths).to match_array(expected_results)
     end
   end
 
@@ -96,20 +102,26 @@ RSpec.describe Percy::Cli::SnapshotRunner do
     it 'returns only the related static files in the directory' do
       paths = runner._find_resource_paths root_dir
 
-      expect(paths).to match_array(
-        [
-          File.join(root_dir, 'css/base.css'),
-          File.join(root_dir, 'css/test with spaces.css'),
-          File.join(root_dir, 'images/jellybeans.png'),
-          File.join(root_dir, 'images/large-file-skipped.png'),
-          # Make sure file symlinks are followed.
-          File.join(root_dir, 'images/jellybeans-symlink.png'),
+      expected_results = [
+        File.join(root_dir, 'css/base.css'),
+        File.join(root_dir, 'css/test with spaces.css'),
+        File.join(root_dir, 'images/jellybeans.png'),
+        File.join(root_dir, 'images/large-file-skipped.png'),
+        # Make sure file symlinks are followed.
+        File.join(root_dir, 'images/jellybeans-symlink.png'),
+      ]
+
+      # Symlinked folders don't work out-of-the-box upon git clone on windows
+      unless Gem.win_platform?
+        expected_results += [
           # Make sure directory symlinks are followed.
           File.join(root_dir, 'images_symlink/jellybeans.png'),
           File.join(root_dir, 'images_symlink/large-file-skipped.png'),
           File.join(root_dir, 'images_symlink/jellybeans-symlink.png'),
-        ],
-      )
+        ]
+      end
+
+      expect(paths).to match_array(expected_results)
     end
   end
 
