@@ -95,7 +95,7 @@ RSpec/DescribedClass:
   EnforcedStyle: explicit
 
 RSpec/ExampleLength:
-  Max: 15
+  Max: 16
 
 RSpec/HookArgument:
   EnforcedStyle: each
