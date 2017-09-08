@@ -1,7 +1,7 @@
 require 'digest'
 
 RSpec.describe Percy::Cli::SnapshotRunner do
-  subject(:runner) { described_class.new }
+  subject(:runner) { Percy::Cli::SnapshotRunner.new }
 
   let(:root_dir) { File.expand_path('../testdata/', __FILE__) }
 
@@ -81,13 +81,13 @@ RSpec.describe Percy::Cli::SnapshotRunner do
       expected_results = [
         File.join(root_dir, 'index.html'),
         File.join(root_dir, 'subdir/test.html'),
+        # Make sure file symlinks are followed.
+        File.join(root_dir, 'subdir/test_symlink.html'),
       ]
 
-      # Symlinks don't work out-of-the-box upon git clone on windows
+      # Symlinked folders don't work out-of-the-box upon git clone on windows
       unless Gem.win_platform?
         expected_results += [
-          # Make sure file symlinks are followed.
-          File.join(root_dir, 'subdir/test_symlink.html'),
           # Make sure directory symlinks are followed.
           File.join(root_dir, 'subdir_symlink/test.html'),
           File.join(root_dir, 'subdir_symlink/test_symlink.html'),
@@ -107,13 +107,13 @@ RSpec.describe Percy::Cli::SnapshotRunner do
         File.join(root_dir, 'css/test with spaces.css'),
         File.join(root_dir, 'images/jellybeans.png'),
         File.join(root_dir, 'images/large-file-skipped.png'),
+        # Make sure file symlinks are followed.
+        File.join(root_dir, 'images/jellybeans-symlink.png'),
       ]
 
-      # Symlinks don't work out-of-the-box upon git clone on windows
+      # Symlinked folders don't work out-of-the-box upon git clone on windows
       unless Gem.win_platform?
         expected_results += [
-          # Make sure file symlinks are followed.
-          File.join(root_dir, 'images/jellybeans-symlink.png'),
           # Make sure directory symlinks are followed.
           File.join(root_dir, 'images_symlink/jellybeans.png'),
           File.join(root_dir, 'images_symlink/large-file-skipped.png'),
