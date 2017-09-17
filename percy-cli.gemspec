@@ -22,6 +22,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'commander', '~> 4.3'
   spec.add_dependency 'percy-client', '~> 1.12'
   spec.add_dependency 'thread', '~> 0.2'
+  spec.add_dependency 'addressable', '~> 2'
 
   spec.add_development_dependency 'bundler', '~> 1.7'
   spec.add_development_dependency 'rake', '~> 10.0'
