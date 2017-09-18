@@ -1,6 +1,6 @@
 require 'find'
 require 'digest'
-require 'uri'
+require 'addressable/uri'
 require 'thread/pool'
 
 Thread.abort_on_exception = true
@@ -145,7 +145,7 @@ module Percy
         paths.each do |path|
           sha = Digest::SHA256.hexdigest(File.read(path))
           next if File.size(path) > MAX_FILESIZE_BYTES
-          resource_url = URI.escape(File.join(baseurl, path.sub(strip_prefix, '')))
+          resource_url = Addressable::URI.escape(File.join(baseurl, path.sub(strip_prefix, '')))
 
           resources << Percy::Client::Resource.new(
             resource_url, sha: sha, is_root: options[:is_root], path: path,
