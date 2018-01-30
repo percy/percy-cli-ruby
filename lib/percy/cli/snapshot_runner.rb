@@ -210,7 +210,7 @@ module Percy
 
       def _include_resource_path?(path, options)
         # Skip git files.
-        return false if path.match?(/\/\.git\//)
+        return false if path =~ /\/\.git\//
         return true if options[:include_all]
 
         STATIC_RESOURCE_EXTENSIONS.include?(File.extname(path))
@@ -228,7 +228,7 @@ module Percy
 
       def _include_root_path?(path, options)
         # Skip git files.
-        return false if path.match?(/\/\.git\//)
+        return false if path =~ /\/\.git\//
 
         # Skip files that don't match the snapshots_regex.
         snapshots_regex = options[:snapshots_regex] || DEFAULT_SNAPSHOTS_REGEX
