@@ -47,6 +47,10 @@ module Percy
           String,
           'Regular expression for matching the files to snapshot. Defaults to: "\.(html|htm)$"'
         c.option \
+          '--ignore_regex REGEX',
+          String,
+          'Regular expression for matching the files NOT to snapshot. Default is nil.'
+        c.option \
           '--widths CSV',
           String,
           'Comma-separated list of rendering widths for snapshots. Ex: 320,1280"'

@@ -33,6 +33,7 @@ module Percy
         baseurl = options[:baseurl] || '/'
         enable_javascript = !!options[:enable_javascript]
         include_all = !!options[:include_all]
+        ignore_regex = options[:ignore_regex]
         widths = options[:widths].map { |w| Integer(w) }
         raise ArgumentError, 'baseurl must start with /' if baseurl[0] != '/'
 
@@ -40,7 +41,8 @@ module Percy
 
         # Find all the static files in the given root directory.
         root_paths = _find_root_paths(root_dir, snapshots_regex: options[:snapshots_regex])
-        resource_paths = _find_resource_paths(root_dir, include_all: include_all)
+        opts = {include_all: include_all, ignore_regex: ignore_regex}
+        resource_paths = _find_resource_paths(root_dir, opts)
         root_resources = _list_resources(root_paths, base_resource_options.merge(is_root: true))
         build_resources = _list_resources(resource_paths, base_resource_options)
         all_resources = root_resources + build_resources
@@ -127,7 +129,9 @@ module Percy
       end
 
       def _find_root_paths(dir_path, options = {})
-        _find_files(dir_path).select { |path| _include_root_path?(path, options) }
+        _find_files(dir_path)
+          .select { |path| _include_root_path?(path, options) }
+          .reject { |path| _ignore_resource_path?(path, options) }
       end
 
       def _find_resource_paths(dir_path, options = {})
@@ -210,6 +214,16 @@ module Percy
         return true if options[:include_all]
 
         STATIC_RESOURCE_EXTENSIONS.include?(File.extname(path))
+      end
+
+      def _ignore_resource_path?(path, options)
+        return false unless options[:ignore_regex]
+
+        begin
+          path.match(options[:ignore_regex])
+        rescue StandardError
+          false
+        end
       end
 
       def _include_root_path?(path, options)
