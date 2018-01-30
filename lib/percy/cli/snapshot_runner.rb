@@ -41,8 +41,8 @@ module Percy
 
         # Find all the static files in the given root directory.
         root_paths = _find_root_paths(root_dir, snapshots_regex: options[:snapshots_regex])
-        options = {include_all: include_all, ignore_regex: ignore_regex}
-        resource_paths = _find_resource_paths(root_dir, options)
+        opts = {include_all: include_all, ignore_regex: ignore_regex}
+        resource_paths = _find_resource_paths(root_dir, opts)
         root_resources = _list_resources(root_paths, base_resource_options.merge(is_root: true))
         build_resources = _list_resources(resource_paths, base_resource_options)
         all_resources = root_resources + build_resources
