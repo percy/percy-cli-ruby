@@ -100,7 +100,7 @@ RSpec.describe Percy::Cli::SnapshotRunner do
     end
 
     it 'skips files passed into the ignore_regex option' do
-      paths = runner._find_root_paths root_dir, ignore_regex: "skip|ignore"
+      paths = runner._find_root_paths root_dir, ignore_regex: 'skip|ignore'
 
       expected_results = [
         File.join(root_dir, 'index.html'),
