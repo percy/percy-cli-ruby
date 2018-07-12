@@ -100,7 +100,7 @@ RSpec.describe Percy::Cli::SnapshotRunner do
     end
 
     it 'returns only the files matching the snapshots_regex' do
-      opts = { snapshots_regex: 'xml' }
+      opts = {snapshots_regex: 'xml'}
       paths = runner._find_root_paths(root_dir, opts)
 
       expected_results = [
@@ -120,7 +120,7 @@ RSpec.describe Percy::Cli::SnapshotRunner do
     end
 
     it 'skips files passed into the ignore_regex option' do
-      opts = { ignore_regex: 'skip|ignore' }
+      opts = {ignore_regex: 'skip|ignore'}
       paths = runner._find_root_paths(root_dir, opts)
 
       expected_results = [
