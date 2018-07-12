@@ -100,11 +100,12 @@ RSpec.describe Percy::Cli::SnapshotRunner do
     end
 
     it 'returns only the files matching the snapshots_regex' do
-      opts = { snapshots_regex: 'htm' }
+      opts = { snapshots_regex: 'xml' }
       paths = runner._find_root_paths(root_dir, opts)
 
       expected_results = [
         File.join(root_dir, 'index.xml'),
+        File.join(root_dir, 'subdir/test.xml'),
       ]
 
       # Symlinked folders don't work out-of-the-box upon git clone on windows
