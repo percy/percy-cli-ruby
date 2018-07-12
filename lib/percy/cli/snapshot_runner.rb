@@ -25,20 +25,23 @@ module Percy
       end
 
       def run(root_dir, options = {})
-        repo = options[:repo] || Percy.config.repo
         root_dir = File.expand_path(File.absolute_path(root_dir))
         strip_prefix = File.expand_path(File.absolute_path(options[:strip_prefix] || root_dir))
-        num_threads = options[:threads] || 10
-        snapshot_limit = options[:snapshot_limit]
-        baseurl = options[:baseurl] || '/'
+
+        # CLI Options
         enable_javascript = !!options[:enable_javascript]
         include_all = !!options[:include_all]
+        snapshot_limit = options[:snapshot_limit]
         snapshots_regex = options[:snapshots_regex]
         ignore_regex = options[:ignore_regex]
         widths = options[:widths].map { |w| Integer(w) }
+        num_threads = options[:threads] || 10
+        repo = options[:repo] || Percy.config.repo
+        baseurl = options[:baseurl] || '/'
         raise ArgumentError, 'baseurl must start with /' if baseurl[0] != '/'
 
         base_resource_options = {strip_prefix: strip_prefix, baseurl: baseurl}
+        opts = {include_all: include_all, ignore_regex: ignore_regex, snapshot_regex: snapshot_regex}
 
         # Find all the static files in the given root directory.
         opts = {include_all: include_all, ignore_regex: ignore_regex, snapshots_regex: snapshots_regex}

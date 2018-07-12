@@ -99,8 +99,8 @@ RSpec.describe Percy::Cli::SnapshotRunner do
       expect(paths).to match_array(expected_results)
     end
 
-    it 'returns only the files matching the snapshot_regex' do
-      opts = { snapshot_regex: 'htm' }
+    it 'returns only the files matching the snapshots_regex' do
+      opts = { snapshots_regex: 'htm' }
       paths = runner._find_root_paths(root_dir, opts)
 
       expected_results = [
