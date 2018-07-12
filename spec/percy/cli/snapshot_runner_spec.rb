@@ -99,6 +99,25 @@ RSpec.describe Percy::Cli::SnapshotRunner do
       expect(paths).to match_array(expected_results)
     end
 
+    it 'returns only the files matching the snapshot_regex' do
+      opts = { snapshot_regex: 'htm' }
+      paths = runner._find_root_paths(root_dir, opts)
+
+      expected_results = [
+        File.join(root_dir, 'index.xml'),
+      ]
+
+      # Symlinked folders don't work out-of-the-box upon git clone on windows
+      unless Gem.win_platform?
+        expected_results += [
+          # Make sure directory symlinks are followed.
+          File.join(root_dir, 'subdir_symlink/test.xml'),
+        ]
+      end
+
+      expect(paths).to match_array(expected_results)
+    end
+
     it 'skips files passed into the ignore_regex option' do
       opts = { ignore_regex: 'skip|ignore' }
       paths = runner._find_root_paths(root_dir, opts)

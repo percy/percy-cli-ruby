@@ -33,7 +33,7 @@ module Percy
         baseurl = options[:baseurl] || '/'
         enable_javascript = !!options[:enable_javascript]
         include_all = !!options[:include_all]
-        snapshot_regex = options[:snapshot_regex]
+        snapshots_regex = options[:snapshots_regex]
         ignore_regex = options[:ignore_regex]
         widths = options[:widths].map { |w| Integer(w) }
         raise ArgumentError, 'baseurl must start with /' if baseurl[0] != '/'
@@ -41,7 +41,7 @@ module Percy
         base_resource_options = {strip_prefix: strip_prefix, baseurl: baseurl}
 
         # Find all the static files in the given root directory.
-        opts = {include_all: include_all, ignore_regex: ignore_regex, snapshot_regex: snapshot_regex}
+        opts = {include_all: include_all, ignore_regex: ignore_regex, snapshots_regex: snapshots_regex}
         root_paths = _find_root_paths(root_dir, opts)
         resource_paths = _find_resource_paths(root_dir, opts)
         root_resources = _list_resources(root_paths, base_resource_options.merge(is_root: true))
