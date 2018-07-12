@@ -3,7 +3,7 @@ inherit_gem:
     - default.yml
 
 AllCops:
-  TargetRubyVersion: 2.1
+  TargetRubyVersion: 2.2
 
 Style/GlobalVars:
   Exclude:

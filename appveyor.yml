@@ -1,8 +1,7 @@
-# Test on Ruby 2.2 and 2.1
+# Test on Ruby 2.2
 environment:
   matrix:
     - RUBY_VERSION: 22
-    - RUBY_VERSION: 21
 
 # Install scripts. (runs after repo cloning)
 install:
