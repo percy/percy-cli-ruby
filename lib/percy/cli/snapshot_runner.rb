@@ -36,7 +36,6 @@ module Percy
         ignore_regex = options[:ignore_regex]
         widths = options[:widths].map { |w| Integer(w) }
         num_threads = options[:threads] || 10
-        repo = options[:repo] || Percy.config.repo
         baseurl = options[:baseurl] || '/'
         raise ArgumentError, 'baseurl must start with /' if baseurl[0] != '/'
 
@@ -66,7 +65,7 @@ module Percy
         build = _rescue_connection_failures do
           say 'Creating build...'
 
-          build = client.create_build(repo, resources: build_resources)
+          build = client.create_build(resources: build_resources)
 
           say 'Uploading build resources...'
           _upload_missing_resources(build, build, all_resources, num_threads: num_threads)
