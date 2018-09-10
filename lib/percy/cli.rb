@@ -39,10 +39,6 @@ module Percy
           String,
           'Directory path to strip from generated URLs. Defaults to the given root directory.'
         c.option \
-          '--repo STRING',
-          String,
-          'Full GitHub repo slug (owner/repo-name). Defaults to the local git repo origin URL.'
-        c.option \
           '--snapshots_regex REGEX',
           String,
           'Regular expression for matching the files to snapshot. Defaults to: "\.(html|htm)$"'
