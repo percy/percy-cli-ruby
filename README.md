@@ -1,4 +1,4 @@
-**Deprecation Notice:** New projects should the [Percy Agent snapshot command](https://docs.percy.io/docs/command-line-client)
+**Deprecation Notice:** New projects should use the [Percy Agent snapshot command](https://docs.percy.io/docs/command-line-client).
 
 # Percy CLI
 
@@ -7,4 +7,4 @@
 
 Command-line interface for [Percy](https://percy.io).
 
-#### Docs here: [https://docs.percy.io/docs/command-line-client-legacy](https://docs.percy.io/docs/command-line-client-legacy)
+Legacy docs here: [https://docs.percy.io/docs/command-line-client-legacy](https://docs.percy.io/docs/command-line-client-legacy)
